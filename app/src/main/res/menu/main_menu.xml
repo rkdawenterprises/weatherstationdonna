@@ -1,0 +1,24 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="net.ddns.rkdawenterprises.myapplication.ScrollingActivity">
+    <item android:id="@+id/action_set_weather_data_uri"
+        android:title="@string/action_set_weather_data_uri"
+        android:orderInCategory="0"
+        app:showAsAction="never" />
+
+    <item android:id="@+id/action_set_weather_history_URI_prefix"
+        android:title="@string/action_set_weather_history_uri"
+        android:orderInCategory="0"
+        app:showAsAction="never" />
+
+    <item android:id="@+id/action_set_refresh_period"
+        android:title="@string/action_set_refresh_period"
+        android:orderInCategory="0"
+        app:showAsAction="never" />
+
+    <item android:id="@+id/action_exit"
+        android:title="@string/action_exit"
+        android:orderInCategory="0"
+        app:showAsAction="never" />
+</menu>
