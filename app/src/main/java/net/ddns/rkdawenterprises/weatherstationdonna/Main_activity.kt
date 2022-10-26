@@ -8,6 +8,10 @@ package net.ddns.rkdawenterprises.weatherstationdonna
 
 import android.app.AlertDialog
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.LinkProperties
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -67,15 +71,10 @@ class Main_activity : AppCompatActivity()
          */
         private const val WEATHER_HISTORY_URI_PREFIX_KEY = "weather_history_uri_prefix";
 
-        private lateinit var m_all_weather_history_postfix: String;
-        fun get_all_weather_history_postfix(): String
-        {
-            return m_all_weather_history_postfix; }
-
-        private lateinit var m_recent_weather_history_postfix: String;
-        fun get_recent_weather_history_postfix(): String
-        {
-            return m_recent_weather_history_postfix; }
+        /**
+         * Download over WiFi only preferences storage key.
+         */
+        private const val DOWNLOAD_OVER_WIFI_ONLY_KEY = "download_over_wifi_only";
 
         /**
          * User modifiable settings.
@@ -84,12 +83,14 @@ class Main_activity : AppCompatActivity()
         private var m_weather_data_URI: URI? = null;
         fun get_weather_data_URI(): URI?
         {
-            return m_weather_data_URI; }
+            return m_weather_data_URI;
+        }
 
         private var m_weather_history_URI_prefix: URI? = null;
         fun get_weather_history_URI_prefix(): URI?
         {
-            return m_weather_history_URI_prefix; }
+            return m_weather_history_URI_prefix;
+        }
     }
 
     private lateinit var binding: MainLayoutBinding;
@@ -102,12 +103,16 @@ class Main_activity : AppCompatActivity()
     private val hide_handler = Handler(Looper.myLooper()!!)
     private val hide_runnable = Runnable { hide(); }
 
+    private val m_weather_data_UI_update = Handler(Looper.getMainLooper(),
+                                                   Handler.Callback {
+                                                       Log.d(LOG_TAG,
+                                                             ">>>>>>>>>>>>>>>>>>>>>>> On UI thread data[${it.what}]")
+                                                       true
+                                                   });
+
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
-
-        m_all_weather_history_postfix = resources.getString(R.string.all_weather_history_postfix);
-        m_recent_weather_history_postfix = resources.getString(R.string.recent_weather_history_postfix);
 
         binding = MainLayoutBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -131,12 +136,39 @@ class Main_activity : AppCompatActivity()
 
         get_saved_settings();
 
-        m_weather_data_getter = Weather_data_getter();
+        m_weather_data_getter = Weather_data_getter(m_weather_data_UI_update);
+
+        val connectivity_manager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager;
+        connectivity_manager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback()
+                                                            {
+                                                                override fun onAvailable(network: Network)
+                                                                {
+                                                                    if(is_ok_to_fetch_data()) update_refresh_period();
+                                                                }
+
+                                                                override fun onLost(network: Network)
+                                                                {
+                                                                    m_weather_data_getter.stop_update();
+                                                                }
+
+                                                                override fun onCapabilitiesChanged(network: Network,
+                                                                                                   networkCapabilities: NetworkCapabilities)
+                                                                {
+                                                                    if(is_ok_to_fetch_data()) update_refresh_period();
+                                                                }
+
+                                                                override fun onLinkPropertiesChanged(network: Network,
+                                                                                                     linkProperties: LinkProperties)
+                                                                {
+                                                                    if(is_ok_to_fetch_data()) update_refresh_period();
+                                                                }
+                                                            })
+
         lifecycle.addObserver(object : DefaultLifecycleObserver
                               {
                                   override fun onResume(owner: LifecycleOwner)
                                   {
-                                      update_refresh_period();
+                                      if(is_ok_to_fetch_data()) update_refresh_period();
                                   }
 
                                   override fun onPause(owner: LifecycleOwner)
@@ -158,7 +190,13 @@ class Main_activity : AppCompatActivity()
     {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main_menu,
-                             menu)
+                             menu);
+
+        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
+        val download_over_wifi_only = shared_prefs.getBoolean(DOWNLOAD_OVER_WIFI_ONLY_KEY,
+                                                              resources.getBoolean(R.bool.download_over_wifi_only_default))
+        menu.findItem(R.id.action_download_over_wifi_only).setChecked(download_over_wifi_only);
+
         return true
     }
 
@@ -251,6 +289,14 @@ class Main_activity : AppCompatActivity()
                 }
                 .show();
 
+            return true;
+        }
+
+        if(id == R.id.action_download_over_wifi_only)
+        {
+            val changed_value = !item.isChecked;
+            item.setChecked(changed_value);
+            store_download_over_wifi_only(changed_value);
             return true;
         }
 
@@ -372,96 +418,6 @@ class Main_activity : AppCompatActivity()
                                  delay_in_milliseconds.toLong())
     }
 
-    /*
-    private fun update_settingss()
-    {
-
-        var updated = false;
-        if(m_refresh_period_index == Int.MAX_VALUE)
-        {
-            m_refresh_period_index = resources.getInteger(R.integer.refresh_period_default);
-            updated = true;
-        }
-
-         || (refresh_period_index != m_refresh_period_index))
-        {
-            updated = true;
-        }
-
-        if( updated )
-        {
-            val refresh_period_array = resources.getStringArray(R.array.refresh_period_list);
-            val refresh_period_parts = refresh_period_array[m_refresh_period_index].split(" ").toTypedArray();
-            try
-            {
-                var value = refresh_period_parts[0].toInt();
-
-                if(refresh_period_parts[1] == "sec")
-                {
-                    value *= 1000
-                }
-
-                if(refresh_period_parts[1] == "min")
-                {
-                    value *= 60 * 1000
-                }
-
-                m_weather_data_getter.set_data_update_period(value);
-            }
-            catch(e: NumberFormatException)
-            {
-                Log.e(LOG_TAG,
-                      e.toString())
-            }
-        }
-
-        updated = false;
-        if(m_weather_data_URI == null)
-        {
-            m_weather_data_URI = URI(resources.getString(R.string.weather_data_URI_default));
-            updated = true;
-        }
-
-        val weather_data_URI = shared_prefs.getString(WEATHER_DATA_URI_KEY,
-                                                                null)
-        if((weather_data_URI == null) || (weather_data_URI != m_weather_data_URI.toString()))
-        {
-            val edit = shared_prefs.edit();
-            edit.putString(WEATHER_DATA_URI_KEY,
-                           m_weather_data_URI.toString());
-            edit.apply()
-            updated = true;
-        }
-
-        if( updated )
-        {
-            m_weather_data_getter.notify_URI_change();
-        }
-
-        updated = false;
-        if(m_weather_history_URI_prefix == null)
-        {
-            m_weather_history_URI_prefix = URI(resources.getString(R.string.weather_history_URI_prefix_default));
-            updated = true;
-        }
-
-        val weather_history_uri_prefix = shared_prefs.getString(WEATHER_HISTORY_URI_PREFIX_KEY,
-                                                      null)
-        if((weather_history_uri_prefix == null) || (weather_history_uri_prefix != m_weather_history_URI_prefix.toString()))
-        {
-            val edit = shared_prefs.edit();
-            edit.putString(WEATHER_HISTORY_URI_PREFIX_KEY,
-                           m_weather_history_URI_prefix.toString());
-            edit.apply()
-            updated = true;
-        }
-
-        if( updated )
-        {
-            m_weather_data_getter.notify_URI_change();
-        }
-    }
-*/
     private fun get_saved_settings()
     {
         val shared_prefs = getPreferences(Context.MODE_PRIVATE);
@@ -548,7 +504,7 @@ class Main_activity : AppCompatActivity()
         {
             m_refresh_period_index = refresh_period_index;
             store_refresh_period(m_refresh_period_index);
-            update_refresh_period();
+            if(is_ok_to_fetch_data()) update_refresh_period();
         }
     }
 
@@ -560,7 +516,7 @@ class Main_activity : AppCompatActivity()
             {
                 m_weather_data_URI = URI(path);
                 store_weather_data_URI(m_weather_data_URI.toString());
-                update_refresh_period();
+                if(is_ok_to_fetch_data()) update_refresh_period();
             }
             catch(e: MalformedURLException)
             {
@@ -578,7 +534,7 @@ class Main_activity : AppCompatActivity()
             {
                 m_weather_history_URI_prefix = URI(path);
                 store_weather_history_uri_prefix(m_weather_history_URI_prefix.toString());
-                update_refresh_period();
+                if(is_ok_to_fetch_data()) update_refresh_period();
             }
             catch(e: MalformedURLException)
             {
@@ -586,5 +542,34 @@ class Main_activity : AppCompatActivity()
                       e.toString());
             }
         }
+    }
+
+    private fun store_download_over_wifi_only(state: Boolean)
+    {
+        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
+        val download_over_wifi_only = shared_prefs.getBoolean(DOWNLOAD_OVER_WIFI_ONLY_KEY,
+                                                              resources.getBoolean(R.bool.download_over_wifi_only_default))
+        if(state != download_over_wifi_only)
+        {
+            val edit = shared_prefs.edit();
+            edit.putBoolean(DOWNLOAD_OVER_WIFI_ONLY_KEY,
+                            state);
+            edit.apply()
+        }
+    }
+
+    private fun is_ok_to_fetch_data(): Boolean
+    {
+        var is_metered = true;
+
+        val connectivity_manager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager;
+        val network_capabilities = connectivity_manager.getNetworkCapabilities(connectivity_manager.activeNetwork);
+        if(network_capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == false) is_metered = false;
+        if(network_capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED) == true) is_metered = false;
+
+        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
+        val download_over_wifi_only = shared_prefs.getBoolean(DOWNLOAD_OVER_WIFI_ONLY_KEY,
+                                                              resources.getBoolean(R.bool.download_over_wifi_only_default))
+        return !(is_metered && download_over_wifi_only);
     }
 }

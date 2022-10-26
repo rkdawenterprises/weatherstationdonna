@@ -2,8 +2,13 @@
     <string name="app_name">Weather Station Donna</string>
 
     <string name="action_set_weather_data_uri">Set Weather Data URI</string>
+    <string name="action_set_weather_data_uri_condensed">Set Data URI</string>
     <string name="action_set_weather_history_uri">Set Weather History URI</string>
+    <string name="action_set_weather_history_uri_condensed">Set Hist URI</string>
     <string name="action_set_refresh_period">Set Refresh Period</string>
+    <string name="action_set_refresh_period_condensed">Set Ref Period</string>
+    <string name="action_download_over_wifi_only">Download Data Over WiFi Only</string>
+    <string name="action_download_over_wifi_only_condensed">Download WiFi Only</string>
     <string name="action_exit">Exit</string>
 
     <string name="enter_the_refresh_period">Enter the Refresh Period:</string>
@@ -25,9 +30,8 @@
     <string name="enter_the_history_uri">Enter the History URI:</string>
 
     <string name="weather_data_URI_default">https://rkdawenterprises.ddns.net/rkdaweapi/weather_station_data</string>
-    <string name="weather_history_URI_prefix_default">https://rkdawenterprises.ddns.net/rkdaweapi/weather_station_history_</string>
-    <string name="all_weather_history_postfix">all</string>
-    <string name="recent_weather_history_postfix">recent</string>
+    <string name="weather_history_URI_prefix_default">https://rkdawenterprises.ddns.net/rkdaweapi/weather_station_history?type=</string>
+    <bool name="download_over_wifi_only_default">true</bool>
 
     <string name="exiting">Exiting WS Donna</string>
     <string name="ok">OK</string>
