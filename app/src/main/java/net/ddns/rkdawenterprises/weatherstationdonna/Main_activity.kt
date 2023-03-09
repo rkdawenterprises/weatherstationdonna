@@ -6,570 +6,162 @@
 
 package net.ddns.rkdawenterprises.weatherstationdonna
 
-import android.app.AlertDialog
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.LinkProperties
-import android.net.Network
-import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.view.WindowInsets
-import android.widget.EditText
-import android.widget.Toast
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import net.ddns.rkdawenterprises.weatherstationdonna.databinding.MainLayoutBinding
-import java.net.MalformedURLException
-import java.net.URI
-import java.net.URISyntaxException
+import androidx.core.view.WindowCompat
+import net.ddns.rkdawenterprises.weatherstationdonna.databinding.ActivityMainBinding
 
-class Main_activity : AppCompatActivity()
+/**
+ * Whether or not the system UI should be auto-hidden after [DEFAULT_AUTO_HIDE_DELAY] milliseconds.
+ */
+private const val DEFAULT_AUTO_HIDE = true;
+
+/**
+ * If [DEFAULT_AUTO_HIDE] is set, the number of milliseconds to wait after user interaction before hiding the system UI.
+ */
+private const val DEFAULT_AUTO_HIDE_DELAY = 3500;
+
+/**
+ * Some older devices needs a small delay between UI widget updates and a change of the status and navigation bar.
+ */
+private const val TOOLBAR_SHOW_HIDE_ANIMATION_DELAY = 100;
+
+/**
+ * Trigger the initial toolbar hide shortly after the activity has been created.
+ */
+private const val INITIAL_HIDE_DELAY = 500;
+
+class Main_activity: AppCompatActivity()
 {
-    companion object
-    {
-        private const val LOG_TAG = "Main_activity";
+    private lateinit var m_binding: ActivityMainBinding;
+    private lateinit var m_scrolling_content: ConstraintLayout;
+    private var m_auto_hide: Boolean = DEFAULT_AUTO_HIDE;
+    private var m_auto_hide_delay: Int = DEFAULT_AUTO_HIDE_DELAY;
 
-        /**
-         * Whether or not the system UI should be auto-hidden after
-         * [AUTO_HIDE_DELAY_MILLIS] milliseconds.
-         */
-        private const val AUTO_HIDE = true
-
-        /**
-         * If [AUTO_HIDE] is set, the number of milliseconds to wait after
-         * user interaction before hiding the system UI.
-         */
-        private const val AUTO_HIDE_DELAY_MILLIS = 3000
-
-        /**
-         * Some older devices needs a small delay between UI widget updates
-         * and a change of the status and navigation bar.
-         */
-        private const val UI_ANIMATION_DELAY = 300
-
-        /**
-         * Refresh period preferences storage key.
-         */
-        private const val REFRESH_PERIOD_INDEX_KEY = "refresh_period_index";
-
-        /**
-         * Weather data URI preferences storage key.
-         */
-        private const val WEATHER_DATA_URI_KEY = "weather_data_uri";
-
-        /**
-         * Weather data URI preferences storage key.
-         */
-        private const val WEATHER_HISTORY_URI_PREFIX_KEY = "weather_history_uri_prefix";
-
-        /**
-         * Download over WiFi only preferences storage key.
-         */
-        private const val DOWNLOAD_OVER_WIFI_ONLY_KEY = "download_over_wifi_only";
-
-        /**
-         * User modifiable settings.
-         */
-        private var m_refresh_period_index: Int = Int.MAX_VALUE;
-        private var m_weather_data_URI: URI? = null;
-        fun get_weather_data_URI(): URI?
-        {
-            return m_weather_data_URI;
-        }
-
-        private var m_weather_history_URI_prefix: URI? = null;
-        fun get_weather_history_URI_prefix(): URI?
-        {
-            return m_weather_history_URI_prefix;
-        }
-    }
-
-    private lateinit var binding: MainLayoutBinding;
-    private lateinit var fullscreen_content: ConstraintLayout;
-
-    private lateinit var m_weather_data_getter: Weather_data_getter;
-
-    private var is_fullscreen: Boolean = false;
-
-    private val hide_handler = Handler(Looper.myLooper()!!)
-    private val hide_runnable = Runnable { hide(); }
-
-    private val m_weather_data_UI_update = Handler(Looper.getMainLooper(),
-                                                   Handler.Callback {
-                                                       Log.d(LOG_TAG,
-                                                             ">>>>>>>>>>>>>>>>>>>>>>> On UI thread data[${it.what}]")
-                                                       true
-                                                   });
+    private val m_show_hide_handler = Handler(Looper.myLooper()!!);
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
-        super.onCreate(savedInstanceState)
+        super.onCreate(savedInstanceState);
 
-        binding = MainLayoutBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        m_binding = ActivityMainBinding.inflate(layoutInflater);
+        setContentView(m_binding.root);
 
-        // Show the back button in action bar.
-        supportActionBar?.setDisplayHomeAsUpEnabled(true);
+        setSupportActionBar(m_binding.toolbar);
 
-        // Set up the user interaction to manually show or hide the system UI.
-        fullscreen_content = binding.contentScrolling.fullscreenContent
-        fullscreen_content.setOnClickListener { toggle() }
+        m_scrolling_content = m_binding.scrollingContent;
+        m_scrolling_content.setOnClickListener { toggle(); }
 
-        // Upon interacting with UI controls, delay any scheduled hide()
-        // operations to prevent the jarring behavior of controls going away
-        // while interacting with the UI.
-        supportActionBar?.addOnMenuVisibilityListener { visible -> on_ui_control_visibility_change(visible) }
+        window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+
+        window.attributes.layoutInDisplayCutoutMode =
+            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER;
+
+        WindowCompat.setDecorFitsSystemWindows(window, false);
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?)
     {
         super.onPostCreate(savedInstanceState);
 
-        get_saved_settings();
-
-        m_weather_data_getter = Weather_data_getter(m_weather_data_UI_update);
-
-        val connectivity_manager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager;
-        connectivity_manager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback()
-                                                            {
-                                                                override fun onAvailable(network: Network)
-                                                                {
-                                                                    if(is_ok_to_fetch_data()) update_refresh_period();
-                                                                }
-
-                                                                override fun onLost(network: Network)
-                                                                {
-                                                                    m_weather_data_getter.stop_update();
-                                                                }
-
-                                                                override fun onCapabilitiesChanged(network: Network,
-                                                                                                   networkCapabilities: NetworkCapabilities)
-                                                                {
-                                                                    if(is_ok_to_fetch_data()) update_refresh_period();
-                                                                }
-
-                                                                override fun onLinkPropertiesChanged(network: Network,
-                                                                                                     linkProperties: LinkProperties)
-                                                                {
-                                                                    if(is_ok_to_fetch_data()) update_refresh_period();
-                                                                }
-                                                            })
-
-        lifecycle.addObserver(object : DefaultLifecycleObserver
-                              {
-                                  override fun onResume(owner: LifecycleOwner)
-                                  {
-                                      if(is_ok_to_fetch_data()) update_refresh_period();
-                                  }
-
-                                  override fun onPause(owner: LifecycleOwner)
-                                  {
-                                      m_weather_data_getter.stop_update();
-                                  }
-                              });
-
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
-        delayed_hide(100);
-
-        Log.i(LOG_TAG,
-              "$packageName has started...");
+        delayed_hide(INITIAL_HIDE_DELAY);
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean
+    private val hide_toolbars_runnable = Runnable { hide_toolbars(); }
+
+    private val show_action_bar_runnable = Runnable {
+        supportActionBar?.show();
+
+        if(m_auto_hide)
+        {
+            delayed_hide();
+        }
+    }
+
+    private val hide_status_and_navigation_bars_runnable = Runnable { hide_status_and_navigation_toolbars(); }
+
+    private fun hide_toolbars()
     {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.main_menu,
-                             menu);
+        supportActionBar?.hide();
 
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        val download_over_wifi_only = shared_prefs.getBoolean(DOWNLOAD_OVER_WIFI_ONLY_KEY,
-                                                              resources.getBoolean(R.bool.download_over_wifi_only_default))
-        menu.findItem(R.id.action_download_over_wifi_only).setChecked(download_over_wifi_only);
-
-        return true
+        m_show_hide_handler.removeCallbacks(show_action_bar_runnable);
+        m_show_hide_handler.postDelayed(hide_status_and_navigation_bars_runnable, TOOLBAR_SHOW_HIDE_ANIMATION_DELAY.toLong());
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean
+    private fun show_toolbars()
     {
-        val id = item.itemId;
+        show_status_and_navigation_toolbars();
 
-        if(id == R.id.action_set_refresh_period)
-        {
-            val refresh_period_array = resources.getStringArray(R.array.refresh_period_list);
-
-            AlertDialog.Builder(this)
-                .setTitle(R.string.enter_the_refresh_period)
-                .setSingleChoiceItems(refresh_period_array,
-                                      m_refresh_period_index,
-                                      null)
-                .setPositiveButton(R.string.ok)
-                { dialog, _ ->
-                    hide();
-                    update_refresh_index((dialog as AlertDialog).listView.checkedItemPosition);
-                }
-                .setNegativeButton(R.string.cancel)
-                { dialog, _ ->
-                    hide();
-                    dialog.cancel();
-                }
-                .show();
-
-            return true;
-        }
-
-        if(id == R.id.action_set_weather_data_uri)
-        {
-            val edittext = EditText(this)
-            edittext.setText(m_weather_data_URI.toString())
-            AlertDialog.Builder(this)
-                .setTitle(R.string.enter_the_data_uri)
-                .setView(edittext)
-                .setPositiveButton(R.string.ok)
-                { _, _ ->
-                    hide();
-                    val text = edittext.text.toString().trim();
-                    try
-                    {
-                        update_weather_data_URI(text);
-                    }
-                    catch(e: URISyntaxException)
-                    {
-                        Toast.makeText(this,
-                                       R.string.the_URI_you_entered_is_not_valid,
-                                       Toast.LENGTH_SHORT).show();
-                    }
-                }
-                .setNegativeButton(R.string.cancel)
-                { dialog, _ ->
-                    hide();
-                    dialog.cancel();
-                }
-                .show();
-
-            return true;
-        }
-
-        if(id == R.id.action_set_weather_history_URI_prefix)
-        {
-            val edittext = EditText(this)
-            edittext.setText(m_weather_history_URI_prefix.toString())
-            AlertDialog.Builder(this)
-                .setTitle(R.string.enter_the_history_uri)
-                .setView(edittext)
-                .setPositiveButton(R.string.ok)
-                { _, _ ->
-                    hide();
-                    val text = edittext.text.toString().trim();
-                    try
-                    {
-                        update_weather_history_URI_prefix(text);
-                    }
-                    catch(e: URISyntaxException)
-                    {
-                        Toast.makeText(this,
-                                       R.string.the_URI_you_entered_is_not_valid,
-                                       Toast.LENGTH_SHORT).show();
-                    }
-                }
-                .setNegativeButton(R.string.cancel)
-                { dialog, _ ->
-                    hide();
-                    dialog.cancel();
-                }
-                .show();
-
-            return true;
-        }
-
-        if(id == R.id.action_download_over_wifi_only)
-        {
-            val changed_value = !item.isChecked;
-            item.setChecked(changed_value);
-            store_download_over_wifi_only(changed_value);
-            return true;
-        }
-
-        if((id == android.R.id.home) || (id == R.id.action_exit))
-        {
-            Toast.makeText(this,
-                           R.string.exiting,
-                           Toast.LENGTH_SHORT).show();
-            moveTaskToBack(true);
-
-            // Allow menu and toast time to close.
-            Handler(Looper.getMainLooper()).postDelayed({ finish() },
-                                                        1000);
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        m_show_hide_handler.removeCallbacks(hide_status_and_navigation_bars_runnable);
+        m_show_hide_handler.postDelayed(show_action_bar_runnable, TOOLBAR_SHOW_HIDE_ANIMATION_DELAY.toLong());
     }
 
-    private val hide_operation_Runnable = Runnable {
-        // Delayed removal of status and navigation bar
-        if(Build.VERSION.SDK_INT >= 30)
+    /**
+     * Schedules a call to hide() after the given [delay_in_milliseconds].
+     * Any previously scheduled calls are removed.
+     *
+     * @param delay_in_milliseconds Time in milliseconds to delay before hiding the toolbars.
+     *
+     * @return void
+     */
+    private fun delayed_hide(delay_in_milliseconds: Int = m_auto_hide_delay)
+    {
+        m_show_hide_handler.removeCallbacks(hide_toolbars_runnable);
+        m_show_hide_handler.postDelayed(hide_toolbars_runnable, delay_in_milliseconds.toLong());
+    }
+
+    private fun toggle()
+    {
+        if(supportActionBar?.isShowing == true)
         {
-            fullscreen_content.windowInsetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars());
+            hide_toolbars();
         }
         else
         {
-            // Note that some of these constants are new as of API 16 (Jelly Bean)
-            // and API 19 (KitKat). It is safe to use them, as they are inlined
-            // at compile-time and do nothing on earlier devices.
+            show_toolbars();
+        }
+    }
+
+    private fun hide_status_and_navigation_toolbars()
+    {
+        if(Build.VERSION.SDK_INT >= 30)
+        {
+            m_scrolling_content.windowInsetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+        }
+        else
+        {
             @Suppress("DEPRECATION")
-            fullscreen_content.systemUiVisibility =
+            m_scrolling_content.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LOW_PROFILE or
                         View.SYSTEM_UI_FLAG_FULLSCREEN or
                         View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
                         View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
                         View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
         }
     }
 
-    private val show_runnable = Runnable {
-        // Delayed display of UI elements
-        supportActionBar?.show()
-    }
-
-    private fun on_ui_control_visibility_change(visible: Boolean)
+    private fun show_status_and_navigation_toolbars()
     {
-        if(visible)
-        {
-            hide_handler.removeCallbacks(hide_runnable);
-            return;
-        }
-
-        if(!visible && AUTO_HIDE)
-        {
-            delayed_hide();
-            return;
-        }
-    }
-
-    private fun toggle()
-    {
-        if(!is_fullscreen)
-        {
-            hide()
-        }
-        else
-        {
-            show()
-        }
-    }
-
-    private fun hide()
-    {
-        // Hide UI first
-        supportActionBar?.hide()
-        is_fullscreen = true
-
-        // Schedule a runnable to remove the status and navigation bar after a delay
-        hide_handler.removeCallbacks(show_runnable)
-        hide_handler.postDelayed(hide_operation_Runnable,
-                                 UI_ANIMATION_DELAY.toLong())
-    }
-
-    private fun show()
-    {
-        // Show the system bar
         if(Build.VERSION.SDK_INT >= 30)
         {
-            fullscreen_content.windowInsetsController?.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+            m_scrolling_content.windowInsetsController?.
+                show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
         }
         else
         {
             @Suppress("DEPRECATION")
-            fullscreen_content.systemUiVisibility =
+            m_scrolling_content.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
                         View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         }
-
-        is_fullscreen = false
-
-        // Schedule a runnable to display UI elements after a delay
-        hide_handler.removeCallbacks(hide_operation_Runnable)
-        hide_handler.postDelayed(show_runnable,
-                                 UI_ANIMATION_DELAY.toLong())
-
-        delayed_hide()
-    }
-
-    /**
-     * Schedules a call to hide() in [delay_in_milliseconds], canceling any
-     * previously scheduled calls.
-     */
-    private fun delayed_hide(delay_in_milliseconds: Int = AUTO_HIDE_DELAY_MILLIS)
-    {
-        hide_handler.removeCallbacks(hide_runnable)
-        hide_handler.postDelayed(hide_runnable,
-                                 delay_in_milliseconds.toLong())
-    }
-
-    private fun get_saved_settings()
-    {
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        m_refresh_period_index = shared_prefs.getInt(REFRESH_PERIOD_INDEX_KEY,
-                                                     resources.getInteger(R.integer.refresh_period_default));
-        m_weather_data_URI = URI(shared_prefs.getString(WEATHER_DATA_URI_KEY,
-                                                        resources.getString(R.string.weather_data_URI_default)));
-        m_weather_history_URI_prefix = URI(shared_prefs.getString(WEATHER_HISTORY_URI_PREFIX_KEY,
-                                                                  resources.getString(R.string.weather_history_URI_prefix_default)));
-    }
-
-    private fun store_refresh_period(index: Int)
-    {
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        val refresh_period_index = shared_prefs.getInt(REFRESH_PERIOD_INDEX_KEY,
-                                                       resources.getInteger(R.integer.refresh_period_default));
-        if(index != refresh_period_index)
-        {
-            val edit = shared_prefs.edit();
-            edit.putInt(REFRESH_PERIOD_INDEX_KEY,
-                        index);
-            edit.apply()
-        }
-    }
-
-    private fun store_weather_data_URI(path: String)
-    {
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        val weather_data_URI = shared_prefs.getString(WEATHER_DATA_URI_KEY,
-                                                      resources.getString(R.string.weather_data_URI_default))
-        if(path != weather_data_URI)
-        {
-            val edit = shared_prefs.edit();
-            edit.putString(WEATHER_DATA_URI_KEY,
-                           path);
-            edit.apply()
-        }
-    }
-
-    private fun store_weather_history_uri_prefix(path: String)
-    {
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        val weather_history_uri_prefix = shared_prefs.getString(WEATHER_HISTORY_URI_PREFIX_KEY,
-                                                                resources.getString(R.string.weather_history_URI_prefix_default))
-        if(path != weather_history_uri_prefix)
-        {
-            val edit = shared_prefs.edit();
-            edit.putString(WEATHER_HISTORY_URI_PREFIX_KEY,
-                           path);
-            edit.apply()
-        }
-    }
-
-    private fun update_refresh_period()
-    {
-        val refresh_period_array = resources.getStringArray(R.array.refresh_period_list);
-        val refresh_period_parts = refresh_period_array[m_refresh_period_index].split(" ").toTypedArray();
-        try
-        {
-            var value = refresh_period_parts[0].toLong();
-
-            if(refresh_period_parts[1] == "sec")
-            {
-                value *= 1000
-            }
-
-            if(refresh_period_parts[1] == "min")
-            {
-                value *= 60 * 1000
-            }
-
-            m_weather_data_getter.start_update(value);
-        }
-        catch(e: NumberFormatException)
-        {
-            Log.e(LOG_TAG,
-                  e.toString())
-        }
-    }
-
-    private fun update_refresh_index(refresh_period_index: Int)
-    {
-        if(m_refresh_period_index != refresh_period_index)
-        {
-            m_refresh_period_index = refresh_period_index;
-            store_refresh_period(m_refresh_period_index);
-            if(is_ok_to_fetch_data()) update_refresh_period();
-        }
-    }
-
-    private fun update_weather_data_URI(path: String)
-    {
-        if(m_weather_data_URI.toString() != path)
-        {
-            try
-            {
-                m_weather_data_URI = URI(path);
-                store_weather_data_URI(m_weather_data_URI.toString());
-                if(is_ok_to_fetch_data()) update_refresh_period();
-            }
-            catch(e: MalformedURLException)
-            {
-                Log.e(LOG_TAG,
-                      e.toString());
-            }
-        }
-    }
-
-    private fun update_weather_history_URI_prefix(path: String)
-    {
-        if(m_weather_history_URI_prefix.toString() != path)
-        {
-            try
-            {
-                m_weather_history_URI_prefix = URI(path);
-                store_weather_history_uri_prefix(m_weather_history_URI_prefix.toString());
-                if(is_ok_to_fetch_data()) update_refresh_period();
-            }
-            catch(e: MalformedURLException)
-            {
-                Log.e(LOG_TAG,
-                      e.toString());
-            }
-        }
-    }
-
-    private fun store_download_over_wifi_only(state: Boolean)
-    {
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        val download_over_wifi_only = shared_prefs.getBoolean(DOWNLOAD_OVER_WIFI_ONLY_KEY,
-                                                              resources.getBoolean(R.bool.download_over_wifi_only_default))
-        if(state != download_over_wifi_only)
-        {
-            val edit = shared_prefs.edit();
-            edit.putBoolean(DOWNLOAD_OVER_WIFI_ONLY_KEY,
-                            state);
-            edit.apply()
-        }
-    }
-
-    private fun is_ok_to_fetch_data(): Boolean
-    {
-        var is_metered = true;
-
-        val connectivity_manager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager;
-        val network_capabilities = connectivity_manager.getNetworkCapabilities(connectivity_manager.activeNetwork);
-        if(network_capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == false) is_metered = false;
-        if(network_capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED) == true) is_metered = false;
-
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        val download_over_wifi_only = shared_prefs.getBoolean(DOWNLOAD_OVER_WIFI_ONLY_KEY,
-                                                              resources.getBoolean(R.bool.download_over_wifi_only_default))
-        return !(is_metered && download_over_wifi_only);
     }
 }
