@@ -1,53 +1,53 @@
 <resources>
     <string name="app_name">Weather Station Donna</string>
 
-    <string name="action_set_weather_data_uri">Set Weather Data URI</string>
-    <string name="action_set_weather_data_uri_condensed">Set Data URI</string>
-    <string name="action_set_weather_history_uri">Set Weather History URI</string>
-    <string name="action_set_weather_history_uri_condensed">Set Hist URI</string>
-    <string name="action_set_refresh_period">Set Refresh Period</string>
-    <string name="action_set_refresh_period_condensed">Set Ref Period</string>
+    <string name="action_set_weather_data_URI">Set Weather Data URI</string>
+    <string name="action_set_weather_data_URI_condensed">Set Data URI</string>
     <string name="action_download_over_wifi_only">Download Data Over WiFi Only</string>
     <string name="action_download_over_wifi_only_condensed">Download WiFi Only</string>
+    <string name="action_set_dark_mode_theme">Set Dark Mode Theme</string>
+    <string name="action_set_dark_mode_theme_condensed">Dark Mode</string>
+    <string name="action_refresh_weather_data">Refresh Weather Data</string>
+    <string name="action_refresh_weather_data_condensed">Refresh</string>
+    <string name="action_auto_hide_toolbars">Auto Hide Toolbars</string>
+    <string name="action_auto_hide_toolbars_condensed">Auto Hide</string>
     <string name="action_exit">Exit</string>
 
-    <string name="enter_the_refresh_period">Enter the Refresh Period:</string>
-    <string name="refresh_period">Refresh Period</string>
-    <string-array name="refresh_period_list">
-        <item>15 sec</item>
-        <item>30 sec</item>
-        <item>60 sec</item>
-        <item>2 min</item>
-        <item>4 min</item>
-        <item>8 min</item>
-        <item>15 min</item>
-        <item>30 min</item>
-        <item>60 min</item>
-    </string-array>
-    <integer name="refresh_period_default">2</integer>
-
+    <string name="select_dark_mode">"Select Dark Mode"</string>
     <string name="enter_the_data_uri">Enter the Data URI:</string>
-    <string name="enter_the_history_uri">Enter the History URI:</string>
 
+    <!-- The default weather data server.    -->
     <string name="weather_data_URI_default">https://rkdawenterprises.ddns.net/rkdaweapi/weather_station_data</string>
-    <string name="weather_history_URI_prefix_default">https://rkdawenterprises.ddns.net/rkdaweapi/weather_station_history?type=</string>
-    <bool name="download_over_wifi_only_default">true</bool>
 
-    <string name="exiting">Exiting WS Donna</string>
+    <!-- If the weather data should only be downloaded over WiFi. -->
+    <bool name="download_over_wifi_only_default">false</bool>
+
+    <!-- If the toolbars should be auto-hidden after [DEFAULT_AUTO_HIDE_DELAY] milliseconds.-->
+    <bool name="auto_hide_toolbars_default">true</bool>
+
+    <!--
+        If [DEFAULT_AUTO_HIDE] is set, the time to wait after user interaction before hiding the toolbars.
+        Time is in milliseconds
+     -->
+    <integer name="auto_hide_toolbars_delay_default">3500</integer>
+
+    <!-- Dark mode selection enumeration. -->
+    <string-array name="dark_mode_selection">
+        <item>System</item>
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+
+    <!-- Default dark mode setting. -->
+    <integer name="dark_mode_selection_default">0</integer>
+
+    <string name="exiting">Exiting</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="the_URI_you_entered_is_not_valid">The URI you entered is not valid</string>
 
-
-
-
-
-
-
-
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="large_text">
+    <string name="dummy_content">Dummy Content</string>
+    <string name="long_text">
         "Material is the metaphor.\n\n"
 
         "A material metaphor is the unifying theory of a rationalized space and a system of motion."
@@ -136,5 +136,4 @@
         "For example, position the FAB to one side of stream of a cards so the FAB won’t interfere "
         "when a user tries to pick up one of cards.\n\n"
     </string>
-    <string name="action_settings">Settings</string>
 </resources>
