@@ -14,12 +14,6 @@
         android:icon="@drawable/ic_baseline_dark_mode_24"
         app:showAsAction="never" />
 
-    <item android:id="@+id/action_set_weather_data_uri"
-        android:title="@string/action_set_weather_data_URI"
-        android:titleCondensed="@string/action_set_weather_data_URI_condensed"
-        android:icon="@drawable/ic_baseline_web_asset_24"
-        app:showAsAction="never" />
-
     <item android:id="@+id/action_download_over_wifi_only"
         android:title="@string/action_download_over_wifi_only"
         android:titleCondensed="@string/action_download_over_wifi_only_condensed"

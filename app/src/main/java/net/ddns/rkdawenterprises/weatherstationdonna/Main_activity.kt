@@ -9,28 +9,27 @@ package net.ddns.rkdawenterprises.weatherstationdonna
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.util.Patterns
 import android.view.*
-import android.view.View.OnFocusChangeListener
-import android.view.inputmethod.InputMethodManager
-import android.webkit.URLUtil
-import android.widget.EditText
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.view.menu.MenuBuilder
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.WindowCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import net.ddns.rkdawenterprises.rkdawe_api_common.Get_weather_station_data_GET_response
+import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
 import net.ddns.rkdawenterprises.weatherstationdonna.databinding.ActivityMainBinding
-import java.net.URI
-
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * Some older devices needs a small delay between UI widget updates and a change of the status and navigation bar.
@@ -50,11 +49,6 @@ const val INITIAL_HIDE_DELAY = 500;
 private const val DARK_MODE_SELECTION_KEY = "dark_mode_selection";
 
 /**
- * Weather data URI preferences storage key.
- */
-private const val WEATHER_DATA_URI_KEY = "weather_data_uri";
-
-/**
  * Download over WiFi only preferences storage key.
  */
 const val DOWNLOAD_OVER_WIFI_ONLY_KEY = "download_over_wifi_only";
@@ -69,6 +63,11 @@ private const val AUTO_HIDE_TOOLBARS_KEY = "auto_hide_toolbars";
  */
 private const val AUTO_HIDE_TOOLBARS_DELAY_KEY = "auto_hide_toolbars_delay";
 
+/**
+ * Last weather data fetched.
+ */
+private const val LAST_WEATHER_DATA_FETCHED_KEY = "last_weather_data_fetched";
+
 class Main_activity: AppCompatActivity()
 {
     companion object
@@ -77,9 +76,11 @@ class Main_activity: AppCompatActivity()
     }
 
     private lateinit var m_binding: ActivityMainBinding;
-    private lateinit var m_scrolling_content: ConstraintLayout;
 
     private val m_show_hide_handler = Handler(Looper.myLooper()!!);
+
+    private val m_weather_station_donna_data_view_model: Weather_station_donna_data_view_model by viewModels();
+    private val m_weather_station_davis_data_view_model: Weather_station_davis_data_view_model by viewModels();
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -94,8 +95,7 @@ class Main_activity: AppCompatActivity()
         supportActionBar?.setHomeButtonEnabled(true);
         supportActionBar?.setDisplayHomeAsUpEnabled(true);
 
-        m_scrolling_content = m_binding.scrollingContent;
-        m_scrolling_content.setOnClickListener { toggle(); }
+        m_binding.scrollingContent.setOnClickListener { toggle(); }
 
         window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                         WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -117,13 +117,81 @@ class Main_activity: AppCompatActivity()
                 delayed_hide();
             }
         }
+
+        m_weather_station_donna_data_view_model.m_response.observe(this) { result->
+            val fetch_status = result[0];
+            if(fetch_status == "success")
+            {
+                val weather_data_string_JSON = result[1];
+                val get_weather_data_response =
+                    Get_weather_station_data_GET_response.deserialize_from_JSON(weather_data_string_JSON);
+                val status = get_weather_data_response.success;
+                if(status == "true")
+                {
+                    val weather_data = get_weather_data_response.weather_data;
+                    update_UI_with_weather_data(weather_data);
+                }
+                else
+                {
+                    display_fetch_issue();
+                }
+            }
+            else
+            {
+                display_fetch_issue();
+            }
+
+            if(m_binding.swipeToRefresh.isRefreshing)
+            {
+                m_binding.swipeToRefresh.isRefreshing = false;
+            }
+        }
+
+        m_weather_station_davis_data_view_model.m_response.observe(this) { result->
+            val fetch_status = result[0];
+            if(fetch_status == "success")
+            {
+                Log.d(LOG_TAG, "Got davis data...")
+            }
+            else
+            {
+                display_fetch_issue();
+            }
+        }
+
+        m_binding.swipeToRefresh.setOnRefreshListener {
+            if(is_ok_to_fetch_data())
+            {
+                get_all_weather_data();
+            }
+        }
+    }
+
+    private fun display_fetch_issue()
+    {
+        val message = resources.getString(R.string.unable_to_get_weather_data);
+        Log.d(LOG_TAG, "display_fetch_issue: $message");
+        Snackbar.make(m_binding.root,
+                      message,
+                      Snackbar.LENGTH_LONG).setAction(R.string.ok) {}.show();
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?)
     {
         super.onPostCreate(savedInstanceState);
 
+        if(is_ok_to_fetch_data())
+        {
+            get_all_weather_data();
+        }
+
         delayed_hide(INITIAL_HIDE_DELAY);
+    }
+
+    private fun get_all_weather_data()
+    {
+        m_weather_station_donna_data_view_model.get_weather_data()
+        m_weather_station_davis_data_view_model.get_weather_data()
     }
 
     private val hide_toolbars_runnable = Runnable { hide_toolbars(); }
@@ -187,12 +255,12 @@ class Main_activity: AppCompatActivity()
     {
         if(Build.VERSION.SDK_INT >= 30)
         {
-            m_scrolling_content.windowInsetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+            m_binding.scrollingContent.windowInsetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
         }
         else
         {
             @Suppress("DEPRECATION")
-            m_scrolling_content.systemUiVisibility =
+            m_binding.scrollingContent.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LOW_PROFILE or
                         View.SYSTEM_UI_FLAG_FULLSCREEN or
                         View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
@@ -206,12 +274,12 @@ class Main_activity: AppCompatActivity()
     {
         if(Build.VERSION.SDK_INT >= 30)
         {
-            m_scrolling_content.windowInsetsController?.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+            m_binding.scrollingContent.windowInsetsController?.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
         }
         else
         {
             @Suppress("DEPRECATION")
-            m_scrolling_content.systemUiVisibility =
+            m_binding.scrollingContent.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
                         View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         }
@@ -270,69 +338,6 @@ class Main_activity: AppCompatActivity()
                         index);
             edit.apply()
         }
-    }
-
-    private fun is_URI_valid(string_URI: String?): Boolean
-    {
-        string_URI ?: return false;
-        return Patterns.WEB_URL.matcher(string_URI).matches() && URLUtil.isValidUrl(string_URI);
-    }
-
-    private fun validated_URI(string_URI: String?): URI?
-    {
-        return if(is_URI_valid(string_URI))
-        {
-            URI(string_URI);
-        }
-        else
-        {
-            null;
-        }
-    }
-
-    private fun get_weather_data_URI(): URI?
-    {
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        val weather_data_URI = shared_prefs.getString(WEATHER_DATA_URI_KEY, null);
-        return if(weather_data_URI != null)
-        {
-            validated_URI(weather_data_URI);
-        }
-        else
-        {
-            val weather_data_URI_default = validated_URI(resources.getString(R.string.weather_data_URI_default));
-            weather_data_URI_default ?: return null;
-            val edit = shared_prefs.edit();
-            edit.putString(WEATHER_DATA_URI_KEY, weather_data_URI_default.toString());
-            edit.apply();
-            weather_data_URI_default;
-        }
-    }
-
-    private fun put_weather_data_URI(path: String): Boolean
-    {
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        val stored_path = get_weather_data_URI();
-
-        if(path != stored_path.toString())
-        {
-            return if(is_URI_valid(path))
-            {
-                val edit = shared_prefs.edit();
-                edit.putString(WEATHER_DATA_URI_KEY,
-                               path);
-                edit.apply()
-
-                false;
-            }
-            else
-            {
-                // The given URI is not valid.
-                true;
-            }
-        }
-
-        return false;
     }
 
     private fun get_download_over_wifi_only(): Boolean
@@ -402,7 +407,6 @@ class Main_activity: AppCompatActivity()
     private fun initialize_saved_settings()
     {
         update_night_mode(get_dark_mode_selection());
-        get_weather_data_URI();
         get_download_over_wifi_only();
         get_auto_hide_toolbars();
         get_auto_hide_toolbars_delay();
@@ -414,8 +418,11 @@ class Main_activity: AppCompatActivity()
 
         if(item_ID == R.id.action_refresh_weather_data)
         {
-            // TODO: Fetch weather data.
-            Log.d(LOG_TAG, "Fetching weather data...");
+            if(is_ok_to_fetch_data())
+            {
+                get_all_weather_data();
+            }
+
             return true;
         }
 
@@ -433,41 +440,6 @@ class Main_activity: AppCompatActivity()
                     }
                     .setNegativeButton(resources.getString(R.string.cancel)) { dialog, _-> dialog.cancel(); }
                     .show();
-
-            return true;
-        }
-
-        if(item_ID == R.id.action_set_weather_data_uri)
-        {
-            val edittext = EditText(this);
-            MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.enter_the_data_uri)
-                    .setView(edittext)
-                    .setPositiveButton(R.string.ok)
-                    { _, _->
-                        val text = edittext.text.toString().trim();
-                        if(put_weather_data_URI(text))
-                        {
-                            Snackbar.make(m_binding.root,
-                                          R.string.the_URI_you_entered_is_not_valid,
-                                          Snackbar.LENGTH_LONG).setAction(R.string.ok) {}.show();
-                        }
-                    }
-                    .setNegativeButton(R.string.cancel) { dialog, _-> dialog.cancel(); }
-                    .show();
-
-            edittext.setText(get_weather_data_URI().toString());
-            edittext.onFocusChangeListener = OnFocusChangeListener { _, _->
-                edittext.post {
-                    val inputMethodManager: InputMethodManager =
-                        getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                    inputMethodManager.showSoftInput(edittext, InputMethodManager.SHOW_IMPLICIT)
-                }
-            }
-            edittext.postDelayed({
-                                     edittext.requestFocus();
-                                     edittext.selectAll();
-                                 }, 100)
 
             return true;
         }
@@ -495,6 +467,7 @@ class Main_activity: AppCompatActivity()
             val message = String.format("%s %s",
                                         resources.getString(R.string.exiting),
                                         resources.getString(R.string.app_name));
+            Log.d(LOG_TAG, "onOptionsItemSelected: $message");
             Snackbar.make(m_binding.root,
                           message,
                           Snackbar.LENGTH_LONG).setAction(R.string.ok) {}.show();
@@ -544,5 +517,100 @@ class Main_activity: AppCompatActivity()
         }
 
         AppCompatDelegate.setDefaultNightMode(mode);
+    }
+
+    private fun is_ok_to_fetch_data(): Boolean
+    {
+        var is_metered = true;
+
+        val connectivity_manager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager;
+        val network_capabilities = connectivity_manager.getNetworkCapabilities(connectivity_manager.activeNetwork);
+        if(network_capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == false) is_metered = false;
+        if(network_capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED) == true) is_metered = false;
+
+        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
+        val download_over_wifi_only = shared_prefs.getBoolean(DOWNLOAD_OVER_WIFI_ONLY_KEY,
+                                                              resources.getBoolean(R.bool.download_over_wifi_only_default))
+        val is_ok = !(is_metered && download_over_wifi_only);
+
+        if(!is_ok)
+        {
+            val message = resources.getString(R.string.not_allowed_to_get_weather_data_unless_over_wifi);
+            Log.d(LOG_TAG, "is_ok_to_fetch_data: $message");
+            Snackbar.make(m_binding.root,
+                          message,
+                          Snackbar.LENGTH_SHORT).setAction(R.string.ok) {}.show();
+        }
+
+        return is_ok;
+    }
+
+    override fun onPause()
+    {
+        val response = m_weather_station_donna_data_view_model.m_response.value;
+        val fetch_status = response?.get(0)
+        if(fetch_status == "success")
+        {
+            val weather_data_string_JSON = response[1];
+            val get_weather_data_response =
+                Get_weather_station_data_GET_response.deserialize_from_JSON(weather_data_string_JSON);
+            val status = get_weather_data_response.success;
+            if(status == "true")
+            {
+                val weather_data = get_weather_data_response.weather_data;
+                val shared_prefs = getPreferences(Context.MODE_PRIVATE);
+                val edit = shared_prefs.edit();
+                edit.putString(LAST_WEATHER_DATA_FETCHED_KEY,
+                               weather_data.serialize_to_JSON());
+                edit.apply()
+            }
+        }
+
+        val response_davis = m_weather_station_donna_data_view_model.m_response.value;
+        val fetch_status_davis = response_davis?.get(0)
+        if(fetch_status_davis == "success")
+        {
+            val weather_data_string_JSON = response_davis[1];
+            val weather_page_string_JSON = response_davis[2];
+//            if(status == "true")
+//            {
+//                val weather_data = get_weather_data_response.weather_data;
+//                val shared_prefs = getPreferences(Context.MODE_PRIVATE);
+//                val edit = shared_prefs.edit();
+//                edit.putString(LAST_WEATHER_DATA_FETCHED_KEY,
+//                               weather_data.serialize_to_JSON());
+//                edit.apply()
+//            }
+        }
+
+        super.onPause()
+    }
+
+    override fun onResume()
+    {
+        super.onResume();
+
+        Log.d(LOG_TAG, "onResume?+");
+
+        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
+        val weather_data_JSON_string = shared_prefs.getString(LAST_WEATHER_DATA_FETCHED_KEY, null);
+        if(weather_data_JSON_string != null)
+        {
+            val weather_data = Weather_data.deserialize_from_JSON(weather_data_JSON_string);
+            update_UI_with_weather_data(weather_data);
+        }
+    }
+
+    private fun update_UI_with_weather_data(weather_data: Weather_data)
+    {
+        m_binding.systemName.text = weather_data.system_name;
+
+        val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        formatter.timeZone = TimeZone.getTimeZone("UTC");
+        val last_received_date_time_string =
+            SimpleDateFormat("h:mm a EEEE, MMM d, yyyy", resources.configuration.locales[0])
+                    .format(formatter.parse(weather_data.time));
+        m_binding.conditionsAsOf.setText(getResources().getString(R.string.conditions_as_of_format,
+                                                                  last_received_date_time_string));
     }
 }
