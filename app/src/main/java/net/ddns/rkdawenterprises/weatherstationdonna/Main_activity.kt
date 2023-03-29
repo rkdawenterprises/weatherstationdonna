@@ -25,6 +25,9 @@ import androidx.appcompat.view.menu.MenuBuilder
 import androidx.core.view.WindowCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import net.ddns.rkdawenterprises.davis_website.Data_parser
+import net.ddns.rkdawenterprises.davis_website.Weather_data_container
+import net.ddns.rkdawenterprises.davis_website.Weather_page
 import net.ddns.rkdawenterprises.rkdawe_api_common.Get_weather_station_data_GET_response
 import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
 import net.ddns.rkdawenterprises.weatherstationdonna.databinding.ActivityMainBinding
@@ -67,6 +70,8 @@ private const val AUTO_HIDE_TOOLBARS_DELAY_KEY = "auto_hide_toolbars_delay";
  * Last weather data fetched.
  */
 private const val LAST_WEATHER_DATA_FETCHED_KEY = "last_weather_data_fetched";
+private const val LAST_WEATHER_DATA_DAVIS_FETCHED_KEY = "last_weather_data_davis_fetched";
+private const val LAST_WEATHER_PAGE_DAVIS_FETCHED_KEY = "last_weather_page_davis_fetched";
 
 class Main_activity: AppCompatActivity()
 {
@@ -79,8 +84,7 @@ class Main_activity: AppCompatActivity()
 
     private val m_show_hide_handler = Handler(Looper.myLooper()!!);
 
-    private val m_weather_station_donna_data_view_model: Weather_station_donna_data_view_model by viewModels();
-    private val m_weather_station_davis_data_view_model: Weather_station_davis_data_view_model by viewModels();
+    private val m_weather_data: Combined_weather_data by viewModels();
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -118,62 +122,26 @@ class Main_activity: AppCompatActivity()
             }
         }
 
-        m_weather_station_donna_data_view_model.m_response.observe(this) { result->
-            val fetch_status = result[0];
-            if(fetch_status == "success")
+        m_weather_data.combined_response.observe(this) { result->
+            val RKDAWE_response = result.first;
+            val davis_response = result.second;
+            if((RKDAWE_response != null) && (davis_response != null))
             {
-                val weather_data_string_JSON = result[1];
-                val get_weather_data_response =
-                    Get_weather_station_data_GET_response.deserialize_from_JSON(weather_data_string_JSON);
-                val status = get_weather_data_response.success;
-                if(status == "true")
-                {
-                    val weather_data = get_weather_data_response.weather_data;
-                    update_UI_with_weather_data(weather_data);
-                }
-                else
-                {
-                    display_fetch_issue();
-                }
-            }
-            else
-            {
-                display_fetch_issue();
-            }
+                check_RKDAWE_response(RKDAWE_response, davis_response, false);
 
-            if(m_binding.swipeToRefresh.isRefreshing)
-            {
-                m_binding.swipeToRefresh.isRefreshing = false;
-            }
-        }
-
-        m_weather_station_davis_data_view_model.m_response.observe(this) { result->
-            val fetch_status = result[0];
-            if(fetch_status == "success")
-            {
-                Log.d(LOG_TAG, "Got davis data...")
-            }
-            else
-            {
-                display_fetch_issue();
+                if(m_binding.swipeToRefresh.isRefreshing)
+                {
+                    m_binding.swipeToRefresh.isRefreshing = false;
+                }
             }
         }
 
         m_binding.swipeToRefresh.setOnRefreshListener {
             if(is_ok_to_fetch_data())
             {
-                get_all_weather_data();
+                m_weather_data.get_weather_data();
             }
         }
-    }
-
-    private fun display_fetch_issue()
-    {
-        val message = resources.getString(R.string.unable_to_get_weather_data);
-        Log.d(LOG_TAG, "display_fetch_issue: $message");
-        Snackbar.make(m_binding.root,
-                      message,
-                      Snackbar.LENGTH_LONG).setAction(R.string.ok) {}.show();
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?)
@@ -182,16 +150,89 @@ class Main_activity: AppCompatActivity()
 
         if(is_ok_to_fetch_data())
         {
-            get_all_weather_data();
+            m_weather_data.get_weather_data();
         }
 
         delayed_hide(INITIAL_HIDE_DELAY);
     }
 
-    private fun get_all_weather_data()
+    private fun check_RKDAWE_response(RKDAWE_result: Array<String>,
+                                      davis_result: Array<String>,
+                                      store_update_not: Boolean)
     {
-        m_weather_station_donna_data_view_model.get_weather_data()
-        m_weather_station_davis_data_view_model.get_weather_data()
+        val fetch_status = RKDAWE_result[0];
+        if(fetch_status == "success")
+        {
+            Log.d(LOG_TAG, "Got donna data...")
+            val weather_data_string_JSON = RKDAWE_result[1];
+            val get_weather_data_response =
+                Get_weather_station_data_GET_response.deserialize_from_JSON(weather_data_string_JSON);
+            val status = get_weather_data_response.success;
+            if(status == "true")
+            {
+                check_davis_response(get_weather_data_response.weather_data,
+                                     davis_result,
+                                     store_update_not);
+            }
+            else
+            {
+                display_fetch_issue();
+            }
+        }
+        else
+        {
+            display_fetch_issue();
+        }
+    }
+
+    private fun check_davis_response(weather_data: Weather_data,
+                                     davis_result: Array<String>,
+                                     store_update_not: Boolean)
+    {
+        val fetch_status = davis_result[0];
+        if(fetch_status == "success")
+        {
+            Log.d(LOG_TAG, "Got davis data...")
+            val parsed: Weather_data_container =
+                Data_parser.parse(davis_result[2], davis_result[1]);
+
+            if(store_update_not)
+            {
+                val shared_prefs = getPreferences(Context.MODE_PRIVATE);
+                val edit = shared_prefs.edit();
+                edit.putString(LAST_WEATHER_DATA_FETCHED_KEY,
+                               weather_data.serialize_to_JSON());
+                edit.putString(LAST_WEATHER_DATA_DAVIS_FETCHED_KEY,
+                               parsed.json_data.serialize_to_JSON());
+                edit.putString(LAST_WEATHER_PAGE_DAVIS_FETCHED_KEY,
+                               parsed.page_data.serialize_to_JSON());
+                edit.apply();
+            }
+            else
+            {
+                update_UI_with_weather_data(weather_data,
+                                            parsed.json_data,
+                                            parsed.page_data);
+            }
+        }
+        else
+        {
+            display_fetch_issue();
+        }
+    }
+
+    private fun display_fetch_issue()
+    {
+        if(m_binding.swipeToRefresh.isRefreshing)
+        {
+            m_binding.swipeToRefresh.isRefreshing = false;
+        }
+
+        val message = resources.getString(R.string.unable_to_get_weather_data);
+        Log.d(LOG_TAG, "display_fetch_issue: $message");
+        Snackbar.make(m_binding.root,
+                      message,
+                      Snackbar.LENGTH_LONG).setAction(R.string.ok) {}.show();
     }
 
     private val hide_toolbars_runnable = Runnable { hide_toolbars(); }
@@ -416,11 +457,14 @@ class Main_activity: AppCompatActivity()
     {
         val item_ID = item.itemId;
 
+        hide_toolbars();
+
         if(item_ID == R.id.action_refresh_weather_data)
         {
             if(is_ok_to_fetch_data())
             {
-                get_all_weather_data();
+                m_binding.swipeToRefresh.post { m_binding.swipeToRefresh.isRefreshing = true }
+                m_weather_data.get_weather_data();
             }
 
             return true;
@@ -547,40 +591,11 @@ class Main_activity: AppCompatActivity()
 
     override fun onPause()
     {
-        val response = m_weather_station_donna_data_view_model.m_response.value;
-        val fetch_status = response?.get(0)
-        if(fetch_status == "success")
+        val RKDAWE_response = m_weather_data.RKDAWE_response.value;
+        val davis_response = m_weather_data.davis_response.value;
+        if((RKDAWE_response != null) && (davis_response != null))
         {
-            val weather_data_string_JSON = response[1];
-            val get_weather_data_response =
-                Get_weather_station_data_GET_response.deserialize_from_JSON(weather_data_string_JSON);
-            val status = get_weather_data_response.success;
-            if(status == "true")
-            {
-                val weather_data = get_weather_data_response.weather_data;
-                val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-                val edit = shared_prefs.edit();
-                edit.putString(LAST_WEATHER_DATA_FETCHED_KEY,
-                               weather_data.serialize_to_JSON());
-                edit.apply()
-            }
-        }
-
-        val response_davis = m_weather_station_donna_data_view_model.m_response.value;
-        val fetch_status_davis = response_davis?.get(0)
-        if(fetch_status_davis == "success")
-        {
-            val weather_data_string_JSON = response_davis[1];
-            val weather_page_string_JSON = response_davis[2];
-//            if(status == "true")
-//            {
-//                val weather_data = get_weather_data_response.weather_data;
-//                val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-//                val edit = shared_prefs.edit();
-//                edit.putString(LAST_WEATHER_DATA_FETCHED_KEY,
-//                               weather_data.serialize_to_JSON());
-//                edit.apply()
-//            }
+            check_RKDAWE_response(RKDAWE_response, davis_response, true);
         }
 
         super.onPause()
@@ -590,26 +605,38 @@ class Main_activity: AppCompatActivity()
     {
         super.onResume();
 
-        Log.d(LOG_TAG, "onResume?+");
-
         val shared_prefs = getPreferences(Context.MODE_PRIVATE);
         val weather_data_JSON_string = shared_prefs.getString(LAST_WEATHER_DATA_FETCHED_KEY, null);
-        if(weather_data_JSON_string != null)
+        val weather_data_davis_JSON_string = shared_prefs.getString(LAST_WEATHER_DATA_DAVIS_FETCHED_KEY, null);
+        val weather_page_davis_JSON_string = shared_prefs.getString(LAST_WEATHER_PAGE_DAVIS_FETCHED_KEY, null);
+        if((weather_data_JSON_string != null)
+            && (weather_data_davis_JSON_string != null)
+            && (weather_page_davis_JSON_string != null))
         {
             val weather_data = Weather_data.deserialize_from_JSON(weather_data_JSON_string);
-            update_UI_with_weather_data(weather_data);
+            val weather_data_davis =
+                net.ddns.rkdawenterprises.davis_website.Weather_data.deserialize_from_JSON(weather_data_davis_JSON_string);
+            val weather_page_davis =
+                Weather_page.deserialize_from_JSON(weather_page_davis_JSON_string);
+            update_UI_with_weather_data(weather_data,
+                                        weather_data_davis,
+                                        weather_page_davis);
         }
     }
 
-    private fun update_UI_with_weather_data(weather_data: Weather_data)
+    private fun update_UI_with_weather_data(weather_data: Weather_data,
+                                            json_data: net.ddns.rkdawenterprises.davis_website.Weather_data,
+                                            page_data: Weather_page)
     {
         m_binding.systemName.text = weather_data.system_name;
 
-        val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
         formatter.timeZone = TimeZone.getTimeZone("UTC");
         val last_received_date_time_string =
-            SimpleDateFormat("h:mm a EEEE, MMM d, yyyy", resources.configuration.locales[0])
-                    .format(formatter.parse(weather_data.time));
+            formatter.parse(weather_data.time)?.let {
+                SimpleDateFormat("h:mm a EEEE, MMM d, yyyy", resources.configuration.locales[0])
+                        .format(it)
+            };
         m_binding.conditionsAsOf.setText(getResources().getString(R.string.conditions_as_of_format,
                                                                   last_received_date_time_string));
     }

@@ -2,7 +2,8 @@
                "FunctionName",
                "RedundantSemicolon",
                "PrivatePropertyName",
-               "LocalVariableName")
+               "LocalVariableName",
+               "PropertyName")
 
 package net.ddns.rkdawenterprises.weatherstationdonna
 
@@ -12,12 +13,12 @@ import retrofit2.http.GET
 
 private const val s_base_URI = "https://www.weatherlink.com"
 
-private val s_retrofit_weather_station_davis = Retrofit.Builder()
+private val s_retrofit = Retrofit.Builder()
         .addConverterFactory(ScalarsConverterFactory.create())
         .baseUrl(s_base_URI)
         .build()
 
-interface Weather_station_davis_API_service
+interface Davis_API_service
 {
     @GET("embeddablePage/getData/f495986504f843dc91b31d956846bd87")
     suspend fun get_weather_station_data(): String
@@ -26,10 +27,10 @@ interface Weather_station_davis_API_service
     suspend fun get_weather_station_page(): String
 }
 
-object Weather_station_davis_API
+public object Davis_API
 {
-    val m_weather_station_davis_API_service: Weather_station_davis_API_service by lazy {
-        s_retrofit_weather_station_davis.create(Weather_station_davis_API_service::class.java)
+    val m_davis_API_service: Davis_API_service by lazy {
+        s_retrofit.create(Davis_API_service::class.java)
     }
 }
 
