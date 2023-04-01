@@ -1,6 +1,6 @@
 package net.ddns.rkdawenterprises.davis_website;
 
-class Forecast_overview {
+public class Forecast_overview {
     String date;
     Overview morning;
     Overview afternoon;

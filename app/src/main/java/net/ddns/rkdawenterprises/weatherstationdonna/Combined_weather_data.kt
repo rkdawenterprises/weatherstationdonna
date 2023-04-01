@@ -9,9 +9,8 @@ package net.ddns.rkdawenterprises.weatherstationdonna
 
 import androidx.lifecycle.*
 import kotlinx.coroutines.launch
+import net.ddns.rkdawenterprises.davis_website.Davis_API
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.function.IntUnaryOperator
-import java.util.function.LongUnaryOperator
 
 class Combined_mediator_live_data<F, S>(first_live_data: LiveData<F>, second_live_data: LiveData<S>)
     : MediatorLiveData<Pair<F?, S?>>()

@@ -4,4 +4,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="title_bar_text">@color/white</color>
     <color name="title_bar_background">@color/black</color>
+    <color name="divider">#FFCFD8DC</color>
 </resources>

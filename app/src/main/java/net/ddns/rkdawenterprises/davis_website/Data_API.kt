@@ -5,7 +5,7 @@
                "LocalVariableName",
                "PropertyName")
 
-package net.ddns.rkdawenterprises.weatherstationdonna
+package net.ddns.rkdawenterprises.davis_website
 
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
@@ -33,4 +33,3 @@ public object Davis_API
         s_retrofit.create(Davis_API_service::class.java)
     }
 }
-

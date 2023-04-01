@@ -15,6 +15,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.Html
 import android.util.Log
 import android.view.*
 import androidx.activity.viewModels
@@ -23,15 +24,20 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.core.view.WindowCompat
+import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import net.ddns.rkdawenterprises.davis_website.Data_parser
+import net.ddns.rkdawenterprises.davis_website.Weather_data.get_forecast_icon_uri_for_date
 import net.ddns.rkdawenterprises.davis_website.Weather_data_container
 import net.ddns.rkdawenterprises.davis_website.Weather_page
 import net.ddns.rkdawenterprises.rkdawe_api_common.Get_weather_station_data_GET_response
+import net.ddns.rkdawenterprises.rkdawe_api_common.Utilities.convert_time_UTC_to_local
 import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
 import net.ddns.rkdawenterprises.weatherstationdonna.databinding.ActivityMainBinding
-import java.text.SimpleDateFormat
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 /**
@@ -630,14 +636,46 @@ class Main_activity: AppCompatActivity()
     {
         m_binding.systemName.text = weather_data.system_name;
 
-        val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
-        formatter.timeZone = TimeZone.getTimeZone("UTC");
-        val last_received_date_time_string =
-            formatter.parse(weather_data.time)?.let {
-                SimpleDateFormat("h:mm a EEEE, MMM d, yyyy", resources.configuration.locales[0])
-                        .format(it)
-            };
-        m_binding.conditionsAsOf.setText(getResources().getString(R.string.conditions_as_of_format,
-                                                                  last_received_date_time_string));
+        m_binding.conditionsAsOf.text = resources.getString(R.string.conditions_as_of_format,
+                                                            convert_time_UTC_to_local(weather_data.time,
+                                                                                      "h:mm a EEEE, MMM d, yyyy"));
+        val forecast_URI: String =
+            get_forecast_icon_uri_for_date(convert_time_UTC_to_local(weather_data.time),
+                                           json_data.forecastOverview);
+        Glide.with(this).load(forecast_URI).fitCenter().into(m_binding.forecastIcon);
+
+        m_binding.currentTemperature.text =
+            Html.fromHtml("${weather_data.outside_temperature} ${weather_data.temperature_units}",
+                          Html.FROM_HTML_MODE_COMPACT);
+
+        m_binding.todaysTemperatureHigh.text =
+            Html.fromHtml(getString(R.string.high_format,
+                                    String.format("%.1f", weather_data.day_hi_out_temp),
+                                    weather_data.temperature_units),
+                          Html.FROM_HTML_MODE_COMPACT);
+
+        m_binding.todaysTemperatureHighTime.text =
+            resources.getString(R.string.at_format,
+                                convert_time_UTC_to_local(weather_data.time_day_hi_out_temp,
+                                                          "h:mm a"));
+
+        m_binding.todaysTemperatureLow.text =
+            Html.fromHtml(getString(R.string.low_format,
+                                    String.format("%.1f", weather_data.day_low_out_temp),
+                                    weather_data.temperature_units),
+                          Html.FROM_HTML_MODE_COMPACT);
+
+        m_binding.todaysTemperatureLowTime.text =
+            resources.getString(R.string.at_format,
+                                convert_time_UTC_to_local(weather_data.time_day_low_out_temp,
+                                                          "h:mm a"));
+
+        m_binding.currentHumidity.text =
+        Html.fromHtml(" ${weather_data.outside_humidity} ${weather_data.humidity_units}",
+                      Html.FROM_HTML_MODE_COMPACT);
+
+        m_binding.humidityDescription.text =
+            resources.getString(R.string.humidity_description_format, json_data.temperatureFeelLike );
+
     }
 }

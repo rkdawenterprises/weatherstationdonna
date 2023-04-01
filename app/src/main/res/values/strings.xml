@@ -37,6 +37,13 @@
     <string name="unable_to_get_weather_data">Unable to get weather data</string>
     <string name="select_dark_mode">"Select Dark Mode"</string>
     <string name="conditions_as_of_format">Conditions as of: %1$s</string>
-    <string name="not_allowed_to_get_weather_data_unless_over_wifi">Not allowed to get weather data unless over WIFI, check settings...</string>
+    <string name="not_allowed_to_get_weather_data_unless_over_wifi">Not allowed to get weather data unless over WIFI, check settings…</string>
+    <string name="dynamic_forecast_icon">Dynamic Forecast Icon</string>
+    <string name="high_format">HIGH: %1$s%2$s</string>
+    <string name="low_format">LOW:  %1$s%2$s</string>
+    <string name="at_format">at %1$s</string>
+    <string name="humidity_icon">Humidity Icon</string>
+    <string name="humidity_colon">Humidity:</string>
+    <string name="humidity_description_format">Feels like %1$s&#x2109;</string>
 
 </resources>
