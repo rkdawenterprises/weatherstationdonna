@@ -8,9 +8,9 @@
         android:icon="@drawable/ic_baseline_refresh_24"
         app:showAsAction="ifRoom"/>
 
-    <item android:id="@+id/action_set_dark_mode_theme"
-        android:title="@string/action_set_dark_mode_theme"
-        android:titleCondensed="@string/action_set_dark_mode_theme_condensed"
+    <item android:id="@+id/action_set_night_mode_theme"
+        android:title="@string/action_set_night_mode_theme"
+        android:titleCondensed="@string/action_set_night_mode_theme_condensed"
         android:icon="@drawable/ic_baseline_dark_mode_24"
         app:showAsAction="never" />
 

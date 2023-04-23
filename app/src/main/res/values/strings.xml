@@ -3,8 +3,8 @@
 
     <string name="action_download_over_wifi_only">Download Data Over WiFi Only</string>
     <string name="action_download_over_wifi_only_condensed">Download WiFi Only</string>
-    <string name="action_set_dark_mode_theme">Set Dark Mode Theme</string>
-    <string name="action_set_dark_mode_theme_condensed">Dark Mode</string>
+    <string name="action_set_night_mode_theme">Set Dark Mode Theme</string>
+    <string name="action_set_night_mode_theme_condensed">Dark Mode</string>
     <string name="action_refresh_weather_data">Refresh Weather Data</string>
     <string name="action_refresh_weather_data_condensed">Refresh</string>
     <string name="action_auto_hide_toolbars">Auto Hide Toolbars</string>
@@ -21,21 +21,21 @@
     <integer name="auto_hide_toolbars_delay_default">3500</integer>
 
     <!-- Dark mode selection enumeration. -->
-    <string-array name="dark_mode_selection">
+    <string-array name="night_mode_options">
         <item>System</item>
         <item>Light</item>
         <item>Dark</item>
     </string-array>
 
     <!-- Default dark mode setting. -->
-    <integer name="dark_mode_selection_default">0</integer>
+    <integer name="night_mode_selection_default">0</integer>
 
     <string name="exiting">Exiting</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="latest_weather_data">Latest Weather Data</string>
     <string name="unable_to_get_weather_data">Unable to get weather data</string>
-    <string name="select_dark_mode">"Select Dark Mode"</string>
+    <string name="select_night_mode">"Select Dark Mode"</string>
     <string name="conditions_as_of_format">Conditions as of: %1$s</string>
     <string name="not_allowed_to_get_weather_data_unless_over_wifi">Not allowed to get weather data unless over WIFI, check settings…</string>
     <string name="dynamic_forecast_icon">Dynamic Forecast Icon</string>

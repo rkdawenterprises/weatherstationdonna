@@ -2,7 +2,9 @@
                "FunctionName",
                "RedundantSemicolon",
                "PrivatePropertyName",
-               "LocalVariableName")
+               "LocalVariableName",
+               "PropertyName",
+               "PackageName")
 
 package net.ddns.rkdawenterprises.weatherstationdonna
 
@@ -34,6 +36,8 @@ import net.ddns.rkdawenterprises.davis_website.Weather_page
 import net.ddns.rkdawenterprises.rkdawe_api_common.Get_weather_station_data_GET_response
 import net.ddns.rkdawenterprises.rkdawe_api_common.Utilities.convert_time_UTC_to_local
 import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
+import net.ddns.rkdawenterprises.weatherstationdonna.UI.Main
+import net.ddns.rkdawenterprises.weatherstationdonna.UI.Weather_data_view_model
 import net.ddns.rkdawenterprises.weatherstationdonna.databinding.ActivityMainBinding
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -52,33 +56,6 @@ const val TOOLBAR_SHOW_HIDE_ANIMATION_DELAY = 100;
  */
 const val INITIAL_HIDE_DELAY = 500;
 
-/**
- * Weather data URI preferences storage key.
- */
-private const val DARK_MODE_SELECTION_KEY = "dark_mode_selection";
-
-/**
- * Download over WiFi only preferences storage key.
- */
-const val DOWNLOAD_OVER_WIFI_ONLY_KEY = "download_over_wifi_only";
-
-/**
- * Auto-hide toolbars preferences storage key.
- */
-private const val AUTO_HIDE_TOOLBARS_KEY = "auto_hide_toolbars";
-
-/**
- * Auto-hide toolbars delay preferences storage key.
- */
-private const val AUTO_HIDE_TOOLBARS_DELAY_KEY = "auto_hide_toolbars_delay";
-
-/**
- * Last weather data fetched.
- */
-private const val LAST_WEATHER_DATA_FETCHED_KEY = "last_weather_data_fetched";
-private const val LAST_WEATHER_DATA_DAVIS_FETCHED_KEY = "last_weather_data_davis_fetched";
-private const val LAST_WEATHER_PAGE_DAVIS_FETCHED_KEY = "last_weather_page_davis_fetched";
-
 class Main_activity: AppCompatActivity()
 {
     companion object
@@ -90,7 +67,7 @@ class Main_activity: AppCompatActivity()
 
     private val m_show_hide_handler = Handler(Looper.myLooper()!!);
 
-    private val m_weather_data: Combined_weather_data by viewModels();
+    private val m_weather_data: Weather_data_view_model by viewModels();
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -105,7 +82,9 @@ class Main_activity: AppCompatActivity()
         supportActionBar?.setHomeButtonEnabled(true);
         supportActionBar?.setDisplayHomeAsUpEnabled(true);
 
-        m_binding.scrollingContent.setOnClickListener { toggle(); }
+        val compose_view = m_binding.scrollingContent;
+        compose_view.setContent { Main(this); }
+        compose_view.setOnClickListener { toggle(); }
 
         window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                         WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -128,24 +107,24 @@ class Main_activity: AppCompatActivity()
             }
         }
 
-        m_weather_data.combined_response.observe(this) { result->
-            val RKDAWE_response = result.first;
-            val davis_response = result.second;
-            if((RKDAWE_response != null) && (davis_response != null))
-            {
-                check_RKDAWE_response(RKDAWE_response, davis_response, false);
-
-                if(m_binding.swipeToRefresh.isRefreshing)
-                {
-                    m_binding.swipeToRefresh.isRefreshing = false;
-                }
-            }
-        }
+//        m_weather_data.combined_response.observe(this) { result->
+//            val RKDAWE_response = result.first;
+//            val davis_response = result.second;
+//            if((RKDAWE_response != null) && (davis_response != null))
+//            {
+//                check_RKDAWE_response(RKDAWE_response, davis_response, false);
+//
+//                if(m_binding.swipeToRefresh.isRefreshing)
+//                {
+//                    m_binding.swipeToRefresh.isRefreshing = false;
+//                }
+//            }
+//        }
 
         m_binding.swipeToRefresh.setOnRefreshListener {
             if(is_ok_to_fetch_data())
             {
-                m_weather_data.get_weather_data();
+//                m_weather_data.get_weather_data();
             }
         }
     }
@@ -156,90 +135,90 @@ class Main_activity: AppCompatActivity()
 
         if(is_ok_to_fetch_data())
         {
-            m_weather_data.get_weather_data();
+//            m_weather_data.get_weather_data();
         }
 
         delayed_hide(INITIAL_HIDE_DELAY);
     }
 
-    private fun check_RKDAWE_response(RKDAWE_result: Array<String>,
-                                      davis_result: Array<String>,
-                                      store_update_not: Boolean)
-    {
-        val fetch_status = RKDAWE_result[0];
-        if(fetch_status == "success")
-        {
-            Log.d(LOG_TAG, "Got donna data...")
-            val weather_data_string_JSON = RKDAWE_result[1];
-            val get_weather_data_response =
-                Get_weather_station_data_GET_response.deserialize_from_JSON(weather_data_string_JSON);
-            val status = get_weather_data_response.success;
-            if(status == "true")
-            {
-                check_davis_response(get_weather_data_response.weather_data,
-                                     davis_result,
-                                     store_update_not);
-            }
-            else
-            {
-                display_fetch_issue();
-            }
-        }
-        else
-        {
-            display_fetch_issue();
-        }
-    }
+//    private fun check_RKDAWE_response(RKDAWE_result: Array<String>,
+//                                      davis_result: Array<String>,
+//                                      store_update_not: Boolean)
+//    {
+//        val fetch_status = RKDAWE_result[0];
+//        if(fetch_status == "success")
+//        {
+//            Log.d(LOG_TAG, "Got donna data...")
+//            val weather_data_string_JSON = RKDAWE_result[1];
+//            val get_weather_data_response =
+//                Get_weather_station_data_GET_response.deserialize_from_JSON(weather_data_string_JSON);
+//            val status = get_weather_data_response.success;
+//            if(status == "true")
+//            {
+//                check_davis_response(get_weather_data_response.weather_data,
+//                                     davis_result,
+//                                     store_update_not);
+//            }
+//            else
+//            {
+//                display_fetch_issue();
+//            }
+//        }
+//        else
+//        {
+//            display_fetch_issue();
+//        }
+//    }
 
-    private fun check_davis_response(weather_data: Weather_data,
-                                     davis_result: Array<String>,
-                                     store_update_not: Boolean)
-    {
-        val fetch_status = davis_result[0];
-        if(fetch_status == "success")
-        {
-            Log.d(LOG_TAG, "Got davis data...")
-            val parsed: Weather_data_container =
-                Data_parser.parse(davis_result[2], davis_result[1]);
+//    private fun check_davis_response(weather_data: Weather_data,
+//                                     davis_result: Array<String>,
+//                                     store_update_not: Boolean)
+//    {
+//        val fetch_status = davis_result[0];
+//        if(fetch_status == "success")
+//        {
+//            Log.d(LOG_TAG, "Got davis data...")
+//            val parsed: Weather_data_container =
+//                Data_parser.parse(davis_result[2], davis_result[1]);
+//
+//            if(store_update_not)
+//            {
+//                val shared_prefs = getPreferences(Context.MODE_PRIVATE);
+//                val edit = shared_prefs.edit();
+//                edit.putString(LAST_WEATHER_DATA_FETCHED_KEY,
+//                               weather_data.serialize_to_JSON());
+//                edit.putString(LAST_WEATHER_DATA_DAVIS_FETCHED_KEY,
+//                               parsed.json_data.serialize_to_JSON());
+//                edit.putString(LAST_WEATHER_PAGE_DAVIS_FETCHED_KEY,
+//                               parsed.page_data.serialize_to_JSON());
+//                edit.apply();
+//            }
+//            else
+//            {
+//                update_UI_with_weather_data(weather_data,
+//                                            parsed.json_data,
+//                                            parsed.page_data);
+//            }
+//        }
+//        else
+//        {
+//            display_fetch_issue();
+//        }
+//    }
 
-            if(store_update_not)
-            {
-                val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-                val edit = shared_prefs.edit();
-                edit.putString(LAST_WEATHER_DATA_FETCHED_KEY,
-                               weather_data.serialize_to_JSON());
-                edit.putString(LAST_WEATHER_DATA_DAVIS_FETCHED_KEY,
-                               parsed.json_data.serialize_to_JSON());
-                edit.putString(LAST_WEATHER_PAGE_DAVIS_FETCHED_KEY,
-                               parsed.page_data.serialize_to_JSON());
-                edit.apply();
-            }
-            else
-            {
-                update_UI_with_weather_data(weather_data,
-                                            parsed.json_data,
-                                            parsed.page_data);
-            }
-        }
-        else
-        {
-            display_fetch_issue();
-        }
-    }
-
-    private fun display_fetch_issue()
-    {
-        if(m_binding.swipeToRefresh.isRefreshing)
-        {
-            m_binding.swipeToRefresh.isRefreshing = false;
-        }
-
-        val message = resources.getString(R.string.unable_to_get_weather_data);
-        Log.d(LOG_TAG, "display_fetch_issue: $message");
-        Snackbar.make(m_binding.root,
-                      message,
-                      Snackbar.LENGTH_LONG).setAction(R.string.ok) {}.show();
-    }
+//    private fun display_fetch_issue()
+//    {
+//        if(m_binding.swipeToRefresh.isRefreshing)
+//        {
+//            m_binding.swipeToRefresh.isRefreshing = false;
+//        }
+//
+//        val message = resources.getString(R.string.unable_to_get_weather_data);
+//        Log.d(LOG_TAG, "display_fetch_issue: $message");
+//        Snackbar.make(m_binding.root,
+//                      message,
+//                      Snackbar.LENGTH_LONG).setAction(R.string.ok) {}.show();
+//    }
 
     private val hide_toolbars_runnable = Runnable { hide_toolbars(); }
 
@@ -357,7 +336,7 @@ class Main_activity: AppCompatActivity()
         all.forEach { entry->
             if(entry.key == "dark_mode_selection")
             {
-                val selections = resources.getStringArray(R.array.dark_mode_selection);
+                val selections = resources.getStringArray(R.array.night_mode_selection);
                 Log.i(LOG_TAG, "${entry.key}[${entry.value.toString()}] : ${selections[entry.value.toString().toInt()]}");
             }
             else
@@ -367,93 +346,12 @@ class Main_activity: AppCompatActivity()
         }
     }
 
-    private fun get_dark_mode_selection(): Int
-    {
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        return shared_prefs.getInt(DARK_MODE_SELECTION_KEY,
-                                   resources.getInteger(R.integer.dark_mode_selection_default));
-    }
-
-    private fun put_dark_mode_selection(index: Int)
-    {
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        val stored_index = get_dark_mode_selection();
-        if(index != stored_index)
-        {
-            val edit = shared_prefs.edit();
-            edit.putInt(DARK_MODE_SELECTION_KEY,
-                        index);
-            edit.apply()
-        }
-    }
-
-    private fun get_download_over_wifi_only(): Boolean
-    {
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        return shared_prefs.getBoolean(DOWNLOAD_OVER_WIFI_ONLY_KEY,
-                                       resources.getBoolean(R.bool.download_over_wifi_only_default));
-    }
-
-    private fun put_download_over_wifi_only(value: Boolean)
-    {
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        val stored_value = get_download_over_wifi_only();
-        if(value != stored_value)
-        {
-            val edit = shared_prefs.edit();
-            edit.putBoolean(DOWNLOAD_OVER_WIFI_ONLY_KEY,
-                            value);
-            edit.apply()
-        }
-    }
-
-    private fun get_auto_hide_toolbars(): Boolean
-    {
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        return shared_prefs.getBoolean(AUTO_HIDE_TOOLBARS_KEY,
-                                       resources.getBoolean(R.bool.auto_hide_toolbars_default));
-    }
-
-    private fun put_auto_hide_toolbars(value: Boolean)
-    {
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        val stored_value = get_auto_hide_toolbars();
-        if(value != stored_value)
-        {
-            val edit = shared_prefs.edit();
-            edit.putBoolean(AUTO_HIDE_TOOLBARS_KEY,
-                            value);
-            edit.apply()
-        }
-    }
-
-    private fun get_auto_hide_toolbars_delay(): Int
-    {
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        return shared_prefs.getInt(AUTO_HIDE_TOOLBARS_DELAY_KEY,
-                                   resources.getInteger(R.integer.auto_hide_toolbars_delay_default));
-    }
-
-    @Suppress("unused")
-    private fun put_auto_hide_toolbars_delay(value: Int)
-    {
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        val stored_value = get_auto_hide_toolbars_delay();
-        if(value != stored_value)
-        {
-            val edit = shared_prefs.edit();
-            edit.putInt(AUTO_HIDE_TOOLBARS_DELAY_KEY,
-                        value);
-            edit.apply()
-        }
-    }
-
     /**
      * Do an initial "get" of all settings to make sure preferences is set up properly.
      */
     private fun initialize_saved_settings()
     {
-        update_night_mode(get_dark_mode_selection());
+        update_night_mode(get_night_mode_selection());
         get_download_over_wifi_only();
         get_auto_hide_toolbars();
         get_auto_hide_toolbars_delay();
@@ -470,22 +368,22 @@ class Main_activity: AppCompatActivity()
             if(is_ok_to_fetch_data())
             {
                 m_binding.swipeToRefresh.post { m_binding.swipeToRefresh.isRefreshing = true }
-                m_weather_data.get_weather_data();
+//                m_weather_data.get_weather_data();
             }
 
             return true;
         }
 
-        if(item_ID == R.id.action_set_dark_mode_theme)
+        if(item_ID == R.id.action_set_night_mode_theme)
         {
-            val selections = resources.getStringArray(R.array.dark_mode_selection);
+            val selections = resources.getStringArray(R.array.night_mode_selection);
 
             MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.select_dark_mode)
-                    .setSingleChoiceItems(selections, get_dark_mode_selection(), null)
+                    .setTitle(R.string.select_night_mode)
+                    .setSingleChoiceItems(selections, get_night_mode_selection(), null)
                     .setPositiveButton(resources.getString(R.string.ok)) { dialog, _->
                         val selection = (dialog as AlertDialog).listView.checkedItemPosition;
-                        put_dark_mode_selection(selection);
+                        put_night_mode_selection(selection);
                         update_night_mode(selection)
                     }
                     .setNegativeButton(resources.getString(R.string.cancel)) { dialog, _-> dialog.cancel(); }
@@ -534,24 +432,9 @@ class Main_activity: AppCompatActivity()
         return super.onOptionsItemSelected(item)
     }
 
-    @Suppress("unused")
-    private fun is_night_mode(): Boolean
-    {
-        var current = false;
-        when(applicationContext.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK))
-        {
-            Configuration.UI_MODE_NIGHT_YES ->
-            {
-                current = true;
-            }
-        }
-
-        return current;
-    }
-
     private fun update_night_mode(selection: Int)
     {
-        val selections = resources.getStringArray(R.array.dark_mode_selection);
+        val selections = resources.getStringArray(R.array.night_mode_options);
 
         val mode: Int = if(selections[selection].contains("dark", true))
         {
@@ -597,12 +480,12 @@ class Main_activity: AppCompatActivity()
 
     override fun onPause()
     {
-        val RKDAWE_response = m_weather_data.RKDAWE_response.value;
-        val davis_response = m_weather_data.davis_response.value;
-        if((RKDAWE_response != null) && (davis_response != null))
-        {
-            check_RKDAWE_response(RKDAWE_response, davis_response, true);
-        }
+//        val RKDAWE_response = m_weather_data.RKDAWE_response.value;
+//        val davis_response = m_weather_data.davis_response.value;
+//        if((RKDAWE_response != null) && (davis_response != null))
+//        {
+//            check_RKDAWE_response(RKDAWE_response, davis_response, true);
+//        }
 
         super.onPause()
     }
@@ -611,71 +494,71 @@ class Main_activity: AppCompatActivity()
     {
         super.onResume();
 
-        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-        val weather_data_JSON_string = shared_prefs.getString(LAST_WEATHER_DATA_FETCHED_KEY, null);
-        val weather_data_davis_JSON_string = shared_prefs.getString(LAST_WEATHER_DATA_DAVIS_FETCHED_KEY, null);
-        val weather_page_davis_JSON_string = shared_prefs.getString(LAST_WEATHER_PAGE_DAVIS_FETCHED_KEY, null);
-        if((weather_data_JSON_string != null)
-            && (weather_data_davis_JSON_string != null)
-            && (weather_page_davis_JSON_string != null))
-        {
-            val weather_data = Weather_data.deserialize_from_JSON(weather_data_JSON_string);
-            val weather_data_davis =
-                net.ddns.rkdawenterprises.davis_website.Weather_data.deserialize_from_JSON(weather_data_davis_JSON_string);
-            val weather_page_davis =
-                Weather_page.deserialize_from_JSON(weather_page_davis_JSON_string);
-            update_UI_with_weather_data(weather_data,
-                                        weather_data_davis,
-                                        weather_page_davis);
-        }
+//        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
+//        val weather_data_JSON_string = shared_prefs.getString(LAST_WEATHER_DATA_FETCHED_KEY, null);
+//        val weather_data_davis_JSON_string = shared_prefs.getString(LAST_WEATHER_DATA_DAVIS_FETCHED_KEY, null);
+//        val weather_page_davis_JSON_string = shared_prefs.getString(LAST_WEATHER_PAGE_DAVIS_FETCHED_KEY, null);
+//        if((weather_data_JSON_string != null)
+//            && (weather_data_davis_JSON_string != null)
+//            && (weather_page_davis_JSON_string != null))
+//        {
+//            val weather_data = Weather_data.deserialize_from_JSON(weather_data_JSON_string);
+//            val weather_data_davis =
+//                net.ddns.rkdawenterprises.davis_website.Weather_data.deserialize_from_JSON(weather_data_davis_JSON_string);
+//            val weather_page_davis =
+//                Weather_page.deserialize_from_JSON(weather_page_davis_JSON_string);
+//            update_UI_with_weather_data(weather_data,
+//                                        weather_data_davis,
+//                                        weather_page_davis);
+//        }
     }
 
-    private fun update_UI_with_weather_data(weather_data: Weather_data,
-                                            json_data: net.ddns.rkdawenterprises.davis_website.Weather_data,
-                                            page_data: Weather_page)
-    {
-        m_binding.systemName.text = weather_data.system_name;
-
-        m_binding.conditionsAsOf.text = resources.getString(R.string.conditions_as_of_format,
-                                                            convert_time_UTC_to_local(weather_data.time,
-                                                                                      "h:mm a EEEE, MMM d, yyyy"));
-        val forecast_URI: String =
-            get_forecast_icon_uri_for_date(convert_time_UTC_to_local(weather_data.time),
-                                           json_data.forecastOverview);
-        Glide.with(this).load(forecast_URI).fitCenter().into(m_binding.forecastIcon);
-
-        m_binding.currentTemperature.text =
-            Html.fromHtml("${weather_data.outside_temperature} ${weather_data.temperature_units}",
-                          Html.FROM_HTML_MODE_COMPACT);
-
-        m_binding.todaysTemperatureHigh.text =
-            Html.fromHtml(getString(R.string.high_format,
-                                    String.format("%.1f", weather_data.day_hi_out_temp),
-                                    weather_data.temperature_units),
-                          Html.FROM_HTML_MODE_COMPACT);
-
-        m_binding.todaysTemperatureHighTime.text =
-            resources.getString(R.string.at_format,
-                                convert_time_UTC_to_local(weather_data.time_day_hi_out_temp,
-                                                          "h:mm a"));
-
-        m_binding.todaysTemperatureLow.text =
-            Html.fromHtml(getString(R.string.low_format,
-                                    String.format("%.1f", weather_data.day_low_out_temp),
-                                    weather_data.temperature_units),
-                          Html.FROM_HTML_MODE_COMPACT);
-
-        m_binding.todaysTemperatureLowTime.text =
-            resources.getString(R.string.at_format,
-                                convert_time_UTC_to_local(weather_data.time_day_low_out_temp,
-                                                          "h:mm a"));
-
-        m_binding.currentHumidity.text =
-        Html.fromHtml(" ${weather_data.outside_humidity} ${weather_data.humidity_units}",
-                      Html.FROM_HTML_MODE_COMPACT);
-
-        m_binding.humidityDescription.text =
-            resources.getString(R.string.humidity_description_format, json_data.temperatureFeelLike );
-
-    }
+//    private fun update_UI_with_weather_data(weather_data: Weather_data,
+//                                            json_data: net.ddns.rkdawenterprises.davis_website.Weather_data,
+//                                            page_data: Weather_page)
+//    {
+//        m_binding.systemName.text = weather_data.system_name;
+//
+//        m_binding.conditionsAsOf.text = resources.getString(R.string.conditions_as_of_format,
+//                                                            convert_time_UTC_to_local(weather_data.time,
+//                                                                                      "h:mm a EEEE, MMM d, yyyy"));
+//        val forecast_URI: String =
+//            get_forecast_icon_uri_for_date(convert_time_UTC_to_local(weather_data.time),
+//                                           json_data.forecastOverview);
+//        Glide.with(this).load(forecast_URI).fitCenter().into(m_binding.forecastIcon);
+//
+//        m_binding.currentTemperature.text =
+//            Html.fromHtml("${weather_data.outside_temperature} ${weather_data.temperature_units}",
+//                          Html.FROM_HTML_MODE_COMPACT);
+//
+//        m_binding.todaysTemperatureHigh.text =
+//            Html.fromHtml(getString(R.string.high_format,
+//                                    String.format("%.1f", weather_data.day_hi_out_temp),
+//                                    weather_data.temperature_units),
+//                          Html.FROM_HTML_MODE_COMPACT);
+//
+//        m_binding.todaysTemperatureHighTime.text =
+//            resources.getString(R.string.at_format,
+//                                convert_time_UTC_to_local(weather_data.time_day_hi_out_temp,
+//                                                          "h:mm a"));
+//
+//        m_binding.todaysTemperatureLow.text =
+//            Html.fromHtml(getString(R.string.low_format,
+//                                    String.format("%.1f", weather_data.day_low_out_temp),
+//                                    weather_data.temperature_units),
+//                          Html.FROM_HTML_MODE_COMPACT);
+//
+//        m_binding.todaysTemperatureLowTime.text =
+//            resources.getString(R.string.at_format,
+//                                convert_time_UTC_to_local(weather_data.time_day_low_out_temp,
+//                                                          "h:mm a"));
+//
+//        m_binding.currentHumidity.text =
+//        Html.fromHtml(" ${weather_data.outside_humidity} ${weather_data.humidity_units}",
+//                      Html.FROM_HTML_MODE_COMPACT);
+//
+//        m_binding.humidityDescription.text =
+//            resources.getString(R.string.humidity_description_format, json_data.temperatureFeelLike );
+//
+//    }
 }
