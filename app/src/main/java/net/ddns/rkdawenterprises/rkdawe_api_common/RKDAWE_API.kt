@@ -5,9 +5,11 @@
                "LocalVariableName",
                "PropertyName")
 
-package net.ddns.rkdawenterprises.weatherstationdonna
+package net.ddns.rkdawenterprises.weatherstationdonna.network
 
+import retrofit2.Call
 import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.http.GET
 

@@ -22,11 +22,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.Main
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.Weather_data_view_model
 import net.ddns.rkdawenterprises.weatherstationdonna.databinding.ActivityMainBinding
@@ -478,18 +478,18 @@ class Main_activity: AppCompatActivity()
         super.onResume();
 
         val context: Context = this;
-        runBlocking(Dispatchers.IO) {
+        lifecycleScope.launch {
             m_last_weather_data_fetched = User_settings.get_last_data(context).first();
-        }
 
-        if(!m_last_weather_data_fetched.is_empty())
-        {
-            m_weather_data.refresh(m_last_weather_data_fetched);
-        }
-        
-        if(m_is_ok_to_fetch_data)
-        {
-            m_weather_data.refresh();
+            if(!m_last_weather_data_fetched.is_empty())
+            {
+                m_weather_data.refresh(m_last_weather_data_fetched);
+            }
+
+            if(m_is_ok_to_fetch_data)
+            {
+                m_weather_data.refresh();
+            }
         }
     }
 

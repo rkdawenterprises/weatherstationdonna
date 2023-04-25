@@ -1,4 +1,4 @@
-package net.ddns.rkdawenterprises.davis_website;
+package net.ddns.rkdawenterprises.weatherstationdonna.network.davis_website;
 
 public class Weather_data_container {
     public final Weather_page page_data;

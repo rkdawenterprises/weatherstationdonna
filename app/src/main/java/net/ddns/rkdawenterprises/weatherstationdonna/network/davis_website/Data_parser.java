@@ -1,4 +1,4 @@
-package net.ddns.rkdawenterprises.davis_website;
+package net.ddns.rkdawenterprises.weatherstationdonna.network.davis_website;
 
 import com.google.gson.Gson;
 
