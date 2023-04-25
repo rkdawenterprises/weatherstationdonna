@@ -2,12 +2,10 @@
 
 package net.ddns.rkdawenterprises.weatherstationdonna.UI.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 
 private val LightColors = lightColors(
@@ -31,11 +29,11 @@ private val DarkColors = darkColors(
 
 @Composable
 fun WeatherStationDonnaTheme(
-    darkTheme: MutableState<Boolean>,
+    dark_theme: Boolean,
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colors = if (darkTheme.value) DarkColors else LightColors,
+        colors = if (dark_theme) DarkColors else LightColors,
         typography = WeatherStationDonnaTypography,
         shapes = WeatherStationDonnaShapes,
         content = content

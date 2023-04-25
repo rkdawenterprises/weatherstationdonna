@@ -8,38 +8,31 @@
 
 package net.ddns.rkdawenterprises.weatherstationdonna.UI
 
-import androidx.appcompat.app.AlertDialog
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.WeatherStationDonnaTheme
-import kotlinx.coroutines.launch
 import net.ddns.rkdawenterprises.weatherstationdonna.Main_activity
-import net.ddns.rkdawenterprises.weatherstationdonna.R
+import net.ddns.rkdawenterprises.weatherstationdonna.User_settings
 
 @Composable
-fun Main(main_activity: Main_activity)
+fun Main(main_activity: Main_activity, m_weather_data: Weather_data_view_model)
 {
-    val is_night_mode : MutableState<Boolean> = remember { mutableStateOf(true); }
+    val is_night_mode = User_settings.is_night_mode_derived(main_activity).collectAsState(initial = )
+//    val is_night_mode : MutableState<Boolean> = remember { mutableStateOf(true); }
 
     WeatherStationDonnaTheme(mutableStateOf(true)) {
         Text("Hello World")
     }
 }
+
+//                    if(!is_ok)
+//                    {
+//                        val message = m_context.resources.getString(R.string.not_allowed_to_get_weather_data_unless_over_wifi);
+//                        Log.d(Main_activity.LOG_TAG, "is_ok_to_fetch_data: $message");
+//                        Snackbar.make(m_binding.root,
+//                                      message,
+//                                      Snackbar.LENGTH_SHORT).setAction(R.string.ok) {}.show();
+//                    }
 
 //        val scaffold_state = rememberScaffoldState();
 //        Scaffold(
