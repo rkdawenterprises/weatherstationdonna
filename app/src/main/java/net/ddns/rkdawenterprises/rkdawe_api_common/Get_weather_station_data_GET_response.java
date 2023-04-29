@@ -1,0 +1,1 @@
+../../../../../../../../../rkdawe_api_common/src/java/net/ddns/rkdawenterprises/rkdawe_api_common/Get_weather_station_data_GET_response.java

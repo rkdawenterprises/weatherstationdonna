@@ -8,23 +8,97 @@
 
 package net.ddns.rkdawenterprises.weatherstationdonna.UI
 
-import androidx.compose.material.*
-import androidx.compose.runtime.*
-import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.WeatherStationDonnaTheme
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import net.ddns.rkdawenterprises.weatherstationdonna.Main_activity
+import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_theme
+import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.material_colors_extended
 import net.ddns.rkdawenterprises.weatherstationdonna.User_settings
 
 @Composable
-fun Main(main_activity: Main_activity, m_weather_data: Weather_data_view_model)
+fun Main(main_activity: Main_activity,
+         main_view_model: Main_view_model)
 {
-    val is_night_mode = User_settings.is_night_mode_derived(main_activity).collectAsState(initial = )
-//    val is_night_mode : MutableState<Boolean> = remember { mutableStateOf(true); }
+    val is_night_mode = User_settings.is_night_mode_derived(main_activity)
+            .collectAsState(initial = Main_view_model.s_is_night_mode_derived);
+    val weather_data = main_view_model.combined_response.observeAsState();
 
-    WeatherStationDonnaTheme(mutableStateOf(true)) {
-        Text("Hello World")
+    Main_theme(main_activity, is_night_mode.value)
+    {
+        Surface(color = MaterialTheme.material_colors_extended.background,
+                modifier = Modifier.clickable { main_activity.toggle() })
+        {
+            Text(text = """${weather_data.value?.first_status} ${System.lineSeparator()}
+                          |${weather_data.value?.first_data} ${System.lineSeparator()} 
+                          |${weather_data.value?.second_status} ${System.lineSeparator()}
+                          |${weather_data.value?.second_data} ${System.lineSeparator()} 
+                          |${weather_data.value?.third_status} ${System.lineSeparator()}
+                          |${weather_data.value?.third_data}""".trimMargin())
+        }
+
+//        modifier = Modifier.clickable(
+//            enabled = false,
+//            onClick = {}
+//        ))
+//        {
+//            Text(text = "First item")
+//            Column(Modifier.padding(16.dp))
+//            {
+//                Text(text = "First item")
+//                Text(text = "Last item")
+//            }
+//        }
+
+//            Box(modifier = Modifier.padding(content_padding)) {
+//                Spacer(modifier = Modifier.height(20.dp))
+//                Header("Weather Station Donna @ Hot Springs, AR - Hot Springs, AR, USA");
+//            }
     }
 }
 
+@Composable
+fun Header(text: String,
+           modifier: Modifier = Modifier)
+{
+    Surface(
+        color = MaterialTheme.colors.onSurface.copy(alpha = 0.1f),
+        contentColor = MaterialTheme.colors.primary,
+        modifier = modifier.semantics { heading() }
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.subtitle2,
+            modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+    }
+}
+
+//        Surface(color = MaterialTheme.material_colors_extended.background) {
+//            Box(Modifier.fillMaxSize(), Alignment.Center) {
+//                Button(
+//                    onClick = { dark = !dark },
+//                    colors = ButtonDefaults.buttonColors(
+//                        backgroundColor = MaterialTheme.material_colors_extended.warning,
+//                        contentColor = MaterialTheme.material_colors_extended.on_warning,
+//                    ),
+//                ) {
+//                    Text("Toggle")
+//                }
+//            }
+//        }
 //                    if(!is_ok)
 //                    {
 //                        val message = m_context.resources.getString(R.string.not_allowed_to_get_weather_data_unless_over_wifi);
@@ -134,26 +208,6 @@ fun Main(main_activity: Main_activity, m_weather_data: Weather_data_view_model)
 //    )
 //}
 
-//@Composable
-//fun Header(
-//    text: String,
-//    modifier: Modifier = Modifier
-//)
-//{
-//    Surface(
-//        color = MaterialTheme.colors.onSurface.copy(alpha = 0.1f),
-//        contentColor = MaterialTheme.colors.primary,
-//        modifier = modifier.semantics { heading() }
-//    ) {
-//        Text(
-//            text = text,
-//            style = MaterialTheme.typography.subtitle2,
-//            modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(horizontal = 16.dp, vertical = 8.dp)
-//        )
-//    }
-//}
 
 //@Composable
 //fun FeaturedPost(
@@ -285,4 +339,27 @@ fun Main(main_activity: Main_activity, m_weather_data: Weather_data_view_model)
 //@Composable
 //private fun HomePreview() {
 //    Home()
+//}
+
+//@Preview
+//@Composable
+//private fun ThemeSwapDemo() {
+//    var dark by remember { mutableStateOf(false) }
+//    Crossfade(targetState = dark) { isDark ->
+//        Main_theme(darkTheme = isDark) {
+//            Surface(color = MaterialTheme.myColors.background) {
+//                Box(Modifier.fillMaxSize(), Alignment.Center) {
+//                    Button(
+//                        onClick = { dark = !dark },
+//                        colors = ButtonDefaults.buttonColors(
+//                            backgroundColor = MaterialTheme.myColors.warning,
+//                            contentColor = MaterialTheme.myColors.onWarning,
+//                        ),
+//                    ) {
+//                        Text("Toggle")
+//                    }
+//                }
+//            }
+//        }
+//    }
 //}

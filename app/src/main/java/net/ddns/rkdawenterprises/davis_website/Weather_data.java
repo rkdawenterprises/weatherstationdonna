@@ -1,13 +1,10 @@
-package net.ddns.rkdawenterprises.weatherstationdonna.network.davis_website;
+package net.ddns.rkdawenterprises.weatherstationdonna.davis_website;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.TimeZone;
 
 public class Weather_data {
     public int windDirection;

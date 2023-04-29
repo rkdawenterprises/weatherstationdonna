@@ -1,0 +1,15 @@
+<resources>
+    <declare-styleable name="FullscreenAttrs">
+        <attr name="colorPrimary" format="color" />
+        <attr name="colorPrimaryVariant" format="color" />
+        <attr name="colorOnPrimary" format="color" />
+        <attr name="colorSecondary" format="color" />
+        <attr name="colorSecondaryVariant" format="color" />
+        <attr name="colorOnSecondary" format="color" />
+        <attr name="colorOnError" format="color" />
+        
+        <attr name="title_bar_text" format="color" />
+        <attr name="title_bar_background" format="color" />
+        <attr name="view_divider" format="color" />
+    </declare-styleable>
+</resources>

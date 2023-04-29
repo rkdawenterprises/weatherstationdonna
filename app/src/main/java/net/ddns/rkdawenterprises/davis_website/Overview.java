@@ -1,4 +1,4 @@
-package net.ddns.rkdawenterprises.weatherstationdonna.network.davis_website;
+package net.ddns.rkdawenterprises.weatherstationdonna.davis_website;
 
 class Overview {
     int weatherCode;

@@ -1,4 +1,10 @@
-@file:Suppress("PackageName")
+@file:Suppress("ClassName",
+               "FunctionName",
+               "RedundantSemicolon",
+               "PrivatePropertyName",
+               "LocalVariableName",
+               "PropertyName",
+               "PackageName")
 
 package net.ddns.rkdawenterprises.weatherstationdonna.UI.theme
 
@@ -27,7 +33,7 @@ private val Domine = FontFamily(
     Font(R.font.domine_bold, FontWeight.Bold)
 )
 
-val WeatherStationDonnaTypography = Typography(
+val Main_typography = Typography(
     h4 = TextStyle(
         fontFamily = Montserrat,
         fontWeight = FontWeight.W600,

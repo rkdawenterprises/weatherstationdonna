@@ -55,9 +55,9 @@ object User_settings
 {
     private const val LOG_TAG = "User_settings";
 
-    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_settings");
+    private val Context.user_preferences_data_store: DataStore<Preferences> by preferencesDataStore(name = "user_settings");
 
-    private fun is_system_night_mode(context: Context): Boolean
+    fun is_system_night_mode(context: Context): Boolean
     {
         var current = false;
         when(context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK))
@@ -73,7 +73,7 @@ object User_settings
 
     fun get_night_mode_selection(context: Context): Flow<Int>
     {
-        return context.dataStore.data
+        return context.user_preferences_data_store.data
                 .map { preferences->
                     preferences[DARK_MODE_SELECTION_KEY]
                         ?: context.resources.getInteger(R.integer.night_mode_selection_default);
@@ -82,7 +82,7 @@ object User_settings
 
     fun is_night_mode_derived(context: Context): Flow<Boolean>
     {
-        return context.dataStore.data
+        return context.user_preferences_data_store.data
                 .map { preferences->
                     val selections = context.resources.getStringArray(R.array.night_mode_options);
                     val selection = preferences[DARK_MODE_SELECTION_KEY]
@@ -105,15 +105,14 @@ object User_settings
 
     suspend fun put_night_mode_selection(context: Context, selection: Int)
     {
-        context.dataStore.edit { preferences->
-            val stored_value = preferences[DARK_MODE_SELECTION_KEY];
-            if(selection != stored_value) preferences[DARK_MODE_SELECTION_KEY] = selection;
+        context.user_preferences_data_store.edit { preferences->
+            preferences[DARK_MODE_SELECTION_KEY] = selection;
         }
     }
 
     fun get_download_over_wifi_only(context: Context): Flow<Boolean>
     {
-        return context.dataStore.data
+        return context.user_preferences_data_store.data
                 .map { preferences->
                     preferences[DOWNLOAD_OVER_WIFI_ONLY_KEY]
                         ?: context.resources.getBoolean(R.bool.download_over_wifi_only_default);
@@ -122,15 +121,14 @@ object User_settings
 
     suspend fun put_download_over_wifi_only(context: Context, value: Boolean)
     {
-        context.dataStore.edit { preferences->
-            val stored_value = preferences[DOWNLOAD_OVER_WIFI_ONLY_KEY];
-            if(value != stored_value) preferences[DOWNLOAD_OVER_WIFI_ONLY_KEY] = value;
+        context.user_preferences_data_store.edit { preferences->
+            preferences[DOWNLOAD_OVER_WIFI_ONLY_KEY] = value;
         }
     }
 
     fun is_ok_to_fetch_data(context: Context): Flow<Boolean>
     {
-        return context.dataStore.data
+        return context.user_preferences_data_store.data
                 .map { preferences->
                     var is_metered = true;
 
@@ -148,7 +146,7 @@ object User_settings
 
     fun get_auto_hide_toolbars(context: Context): Flow<Boolean>
     {
-        return context.dataStore.data
+        return context.user_preferences_data_store.data
                 .map { preferences->
                     preferences[AUTO_HIDE_TOOLBARS_KEY] ?: context.resources.getBoolean(R.bool.auto_hide_toolbars_default);
                 }
@@ -156,15 +154,14 @@ object User_settings
 
     suspend fun put_auto_hide_toolbars(context: Context, value: Boolean)
     {
-        context.dataStore.edit { preferences->
-            val stored_value = preferences[AUTO_HIDE_TOOLBARS_KEY];
-            if(value != stored_value) preferences[AUTO_HIDE_TOOLBARS_KEY] = value;
+        context.user_preferences_data_store.edit { preferences->
+            preferences[AUTO_HIDE_TOOLBARS_KEY] = value;
         }
     }
 
     fun get_auto_hide_toolbars_delay(context: Context): Flow<Int>
     {
-        return context.dataStore.data
+        return context.user_preferences_data_store.data
                 .map { preferences->
                     preferences[AUTO_HIDE_TOOLBARS_DELAY_KEY]
                         ?: context.resources.getInteger(R.integer.auto_hide_toolbars_delay_default);
@@ -174,15 +171,14 @@ object User_settings
     @Suppress("unused")
     suspend fun put_auto_hide_toolbars_delay(context: Context, value: Int)
     {
-        context.dataStore.edit { preferences->
-            val stored_value = preferences[AUTO_HIDE_TOOLBARS_DELAY_KEY];
-            if(value != stored_value) preferences[AUTO_HIDE_TOOLBARS_DELAY_KEY] = value;
+        context.user_preferences_data_store.edit { preferences->
+            preferences[AUTO_HIDE_TOOLBARS_DELAY_KEY] = value;
         }
     }
 
     fun get_last_data(context: Context): Flow<Data_storage>
     {
-        return context.dataStore.data
+        return context.user_preferences_data_store.data
                 .map { preferences->
                     val data_storage_as_string: String? = preferences[LAST_WEATHER_DATA_FETCHED_KEY];
                     if( data_storage_as_string == null)
@@ -199,10 +195,11 @@ object User_settings
     suspend fun put_last_data(context: Context, data_storage: Data_storage)
     {
         val data_storage_as_string = data_storage.serialize_to_JSON();
-        context.dataStore.edit { preferences->
-            val stored_value = preferences[LAST_WEATHER_DATA_FETCHED_KEY];
-            if((data_storage_as_string != null) && (data_storage_as_string != stored_value))
+        context.user_preferences_data_store.edit { preferences->
+            if(data_storage_as_string != null)
+            {
                 preferences[LAST_WEATHER_DATA_FETCHED_KEY] = data_storage_as_string;
+            }
         }
     }
 
