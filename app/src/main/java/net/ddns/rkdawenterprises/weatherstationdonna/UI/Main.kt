@@ -9,39 +9,52 @@
 package net.ddns.rkdawenterprises.weatherstationdonna.UI
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.ddns.rkdawenterprises.weatherstationdonna.Main_activity
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_theme
-import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.material_colors_extended
 
 @Suppress("unused")
 private const val LOG_TAG = "Main_composable";
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Main(main_activity: Main_activity,
          main_view_model: Main_view_model)
 {
-    val is_night_mode = main_view_model.is_application_in_night_mode(main_activity).collectAsState(initial = false);
+    val is_night_mode = main_view_model.is_application_in_night_mode(main_activity)
+            .collectAsStateWithLifecycle(false, main_activity);
     val weather_data = main_view_model.combined_response.observeAsState();
+    val is_refreshing by main_view_model.is_refreshing.collectAsStateWithLifecycle();
+    val pull_refresh_state = rememberPullRefreshState(is_refreshing, { main_view_model.refresh() })
 
     Main_theme(main_activity, is_night_mode.value)
     {
-        Surface(color = MaterialTheme.material_colors_extended.background,
-                modifier = Modifier.clickable { main_activity.toggle() })
+        Box(modifier = Modifier
+                .padding(5.dp)
+                .pullRefresh(pull_refresh_state)
+                .clickable { main_activity.toggle() })
         {
-            LazyColumn()
+            LazyColumn(Modifier.fillMaxSize())
             {
                 item()
                 {
@@ -58,7 +71,30 @@ fun Main(main_activity: Main_activity,
                     Text(text = "${weather_data.value?.third_status}${System.lineSeparator()}${weather_data.value?.third_data}");
                 }
             }
+            PullRefreshIndicator(is_refreshing, pull_refresh_state, Modifier.align(Alignment.TopCenter));
         }
+
+//        Surface(color = MaterialTheme.material_colors_extended.background,
+//                modifier = Modifier.clickable { main_activity.toggle() })
+//        {
+//            LazyColumn()
+//            {
+//                item()
+//                {
+//                    Text(text = "${weather_data.value?.first_status}${System.lineSeparator()}${weather_data.value?.first_data}");
+//                }
+//
+//                item()
+//                {
+//                    Text(text = "${weather_data.value?.second_status}${System.lineSeparator()}${weather_data.value?.second_data}");
+//                }
+//
+//                item()
+//                {
+//                    Text(text = "${weather_data.value?.third_status}${System.lineSeparator()}${weather_data.value?.third_data}");
+//                }
+//            }
+//        }
 
 //        modifier = Modifier.clickable(
 //            enabled = false,
