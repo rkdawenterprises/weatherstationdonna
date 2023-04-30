@@ -17,9 +17,6 @@
     <!-- If the toolbars should be auto-hidden.-->
     <bool name="auto_hide_toolbars_default">true</bool>
 
-    <!-- The time to wait after user interaction before hiding the toolbars. Time is in milliseconds -->
-    <integer name="auto_hide_toolbars_delay_default">3500</integer>
-
     <!-- Dark mode selection enumeration. -->
     <string-array name="night_mode_options">
         <item>System</item>

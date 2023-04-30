@@ -1,4 +1,4 @@
-package net.ddns.rkdawenterprises.weatherstationdonna.davis_website;
+package net.ddns.rkdawenterprises.davis_website;
 
 class User_account_settings {
     int userId;

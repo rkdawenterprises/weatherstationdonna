@@ -9,23 +9,37 @@
 package net.ddns.rkdawenterprises.weatherstationdonna.UI
 
 import android.content.Context
+import android.content.res.Configuration
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonSyntaxException
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import net.ddns.rkdawenterprises.davis_website.Weather_page
 import net.ddns.rkdawenterprises.rkdawe_api_common.RKDAWE_API
 import net.ddns.rkdawenterprises.weatherstationdonna.Main_activity
 import net.ddns.rkdawenterprises.weatherstationdonna.R
-import net.ddns.rkdawenterprises.weatherstationdonna.User_settings
 import net.ddns.rkdawenterprises.weatherstationdonna.davis_website.Davis_API
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -35,82 +49,114 @@ class Main_view_model(context: Main_activity): ViewModel()
     {
         override fun <T: ViewModel> create(modelClass: Class<T>): T
         {
+            @Suppress("UNCHECKED_CAST")
             return Main_view_model(context) as T
+        }
+    }
+
+    class Data_storage(var first_status: String? = null,
+                       var first_data: String? = null,
+                       var second_status: String? = null,
+                       var second_data: String? = null,
+                       var third_status: String? = null,
+                       var third_data: String? = null)
+    {
+        companion object
+        {
+            private const val LOG_TAG = "Data_storage";
+
+            private val s_GSON: Gson = GsonBuilder().disableHtmlEscaping()
+                    .setPrettyPrinting()
+                    .create()
+
+            fun serialize_to_JSON(`object`: Data_storage?): String?
+            {
+                return s_GSON.toJson(`object`)
+            }
+
+            fun deserialize_from_JSON(string_JSON: String): Data_storage?
+            {
+                var instance: Data_storage? = null
+
+                try
+                {
+                    @Suppress("unused")
+                    instance = s_GSON.fromJson(string_JSON,
+                                               Data_storage::class.java)
+                }
+                catch(exception: JsonSyntaxException)
+                {
+                    Log.d(LOG_TAG, "Bad data format for Weather_data: $exception")
+                    Log.d(LOG_TAG, ">>>$string_JSON<<<")
+                }
+
+                return instance
+            }
+        }
+
+        fun is_empty(): Boolean
+        {
+            return ((first_status == null) && (first_data == null) &&
+                    (second_status == null) && (second_data == null) &&
+                    (third_status == null) && (third_data == null))
+        }
+
+        fun serialize_to_JSON(): String?
+        {
+            return serialize_to_JSON(this)
         }
     }
 
     companion object
     {
+        @Suppress("unused")
         private const val LOG_TAG = "Main_view_model";
 
-        const val STATE_IDLE = 0b000000;
-        const val STATE_STARTED = 0b000010;
-        const val STATE_FIRST = 0b000100;
-        const val STATE_SECOND = 0b001000;
-        const val STATE_THIRD = 0b010000;
-        const val STATE_ALL = STATE_STARTED or STATE_FIRST or STATE_SECOND or STATE_THIRD;
-
-        // Cached data-store items for non-flow access.
-        var s_night_mode_selection: Int = 0
-        var s_is_night_mode_derived: Boolean = false;
-        var s_is_download_over_wifi_only: Boolean = true;
-        var s_is_auto_hide_toolbars: Boolean = false;
-        var s_auto_hide_toolbars_delay: Int = 3500;
-        var s_is_ok_to_fetch_data: Boolean = false;
-        var s_last_weather_data_fetched: User_settings.Data_storage = User_settings.Data_storage();
+        private const val STATE_IDLE = 0b000000;
+        private const val STATE_STARTED = 0b000010;
+        private const val STATE_FIRST = 0b000100;
+        private const val STATE_SECOND = 0b001000;
+        private const val STATE_THIRD = 0b010000;
+        private const val STATE_ALL = STATE_STARTED or STATE_FIRST or STATE_SECOND or STATE_THIRD;
     }
+
+    /**
+     * Last successful fetched weather data.
+     */
+    var m_last_weather_data_fetched: Data_storage = Data_storage()
+        set(value)
+        {
+            field = value;
+            if(( value.first_status == "success") && (value.first_data != null))
+            {
+                field.first_status = value.first_status;
+                field.first_data = value.first_data;
+            }
+
+            if(( value.second_status == "success") && (value.second_data != null))
+            {
+                field.second_status = value.second_status;
+                field.second_data = value.second_data;
+            }
+
+            if(( value.third_status == "success") && (value.third_data != null))
+            {
+                field.third_status = value.third_status;
+                field.third_data = value.third_data;
+            }
+        }
 
     init
     {
-        s_night_mode_selection = context.resources.getInteger(R.integer.night_mode_selection_default);
-        s_is_night_mode_derived = User_settings.is_system_night_mode(context);
-        s_is_download_over_wifi_only = context.resources.getBoolean(R.bool.download_over_wifi_only_default);
-        s_is_auto_hide_toolbars = context.resources.getBoolean(R.bool.auto_hide_toolbars_default);
-        s_auto_hide_toolbars_delay = context.resources.getInteger(R.integer.auto_hide_toolbars_delay_default);
-        s_is_ok_to_fetch_data = false;
-        s_last_weather_data_fetched = User_settings.Data_storage();
+        m_last_weather_data_fetched = Data_storage();
 
-        initialize_saved_settings(context);
+        load_night_mode_selection(context)
+        { night_mode_selection ->
+            update_night_mode(context, night_mode_selection);
+        }
     }
-    
+
     private val m_state: AtomicInteger = AtomicInteger(STATE_IDLE);
-
-    private fun initialize_saved_settings(context: Main_activity)
-    {
-        viewModelScope.launch {
-            s_night_mode_selection = User_settings.get_night_mode_selection(context).first();
-            update_night_mode(context, s_night_mode_selection);
-            s_is_night_mode_derived = User_settings.is_night_mode_derived(context).first();
-            s_is_download_over_wifi_only = User_settings.get_download_over_wifi_only(context).first();
-            s_is_auto_hide_toolbars = User_settings.get_auto_hide_toolbars(context).first();
-            s_auto_hide_toolbars_delay = User_settings.get_auto_hide_toolbars_delay(context).first();
-            s_is_ok_to_fetch_data = User_settings.is_ok_to_fetch_data(context).first();
-        }
-
-        User_settings.get_night_mode_selection(context).distinctUntilChanged().asLiveData().observe(context) { night_mode_selection ->
-            s_night_mode_selection = night_mode_selection;
-        }
-
-        User_settings.is_night_mode_derived(context).distinctUntilChanged().asLiveData().observe(context) { is_night_mode_derived ->
-            s_is_night_mode_derived = is_night_mode_derived;
-        }
-
-        User_settings.get_download_over_wifi_only(context).distinctUntilChanged().asLiveData().observe(context) { is_download_over_wifi_only ->
-            s_is_download_over_wifi_only = is_download_over_wifi_only;
-        }
-
-        User_settings.get_auto_hide_toolbars(context).distinctUntilChanged().asLiveData().observe(context) { is_auto_hide_toolbars ->
-            s_is_auto_hide_toolbars = is_auto_hide_toolbars;
-        }
-
-        User_settings.get_auto_hide_toolbars_delay(context).distinctUntilChanged().asLiveData().observe(context) { auto_hide_toolbars_delay ->
-            s_auto_hide_toolbars_delay = auto_hide_toolbars_delay;
-        }
-
-        User_settings.is_ok_to_fetch_data(context).distinctUntilChanged().asLiveData().observe(context) { is_ok_to_fetch_data ->
-            s_is_ok_to_fetch_data = is_ok_to_fetch_data;
-        }
-    }
 
     private fun get_state(): Int
     {
@@ -136,74 +182,13 @@ class Main_view_model(context: Main_activity): ViewModel()
     private val m_third_response = MutableLiveData<Array<String>>();
     val third_response: LiveData<Array<String>> get() = m_third_response;
 
-    private val m_combined_response = MutableLiveData<User_settings.Data_storage>();
-    val combined_response: LiveData<User_settings.Data_storage> get() = m_combined_response;
+    private val m_combined_response = MutableLiveData<Data_storage>();
+    val combined_response: LiveData<Data_storage> get() = m_combined_response;
 
     private val m_is_refreshing = MutableStateFlow(false);
     val is_refreshing: StateFlow<Boolean> get() = m_is_refreshing.asStateFlow();
 
-    fun set_night_mode_selection(context: Context, selection: Int)
-    {
-        viewModelScope.launch {
-            User_settings.put_night_mode_selection(context, selection);
-        }
-
-        // TODO: The observer is not being called, so update manually. Check if this changes in the future...
-        s_night_mode_selection = selection;
-        update_night_mode(context, selection);
-
-        viewModelScope.launch {
-            s_is_night_mode_derived = User_settings.is_night_mode_derived(context).first();
-        }
-    }
-
-    fun set_download_over_wifi_only(context: Context, value: Boolean)
-    {
-        viewModelScope.launch {
-            User_settings.put_download_over_wifi_only(context, value);
-        }
-
-        s_is_download_over_wifi_only = value
-    }
-
-    fun set_auto_hide_toolbars(context: Context, value: Boolean)
-    {
-        viewModelScope.launch {
-            User_settings.put_auto_hide_toolbars(context, value);
-        }
-
-        s_is_auto_hide_toolbars = value;
-    }
-
-    fun set_last_weather_data_fetched(context: Context, data_storage: User_settings.Data_storage)
-    {
-        viewModelScope.launch {
-            User_settings.put_last_data(context, data_storage);
-            s_last_weather_data_fetched = data_storage;
-        }
-    }
-
-    private fun update_night_mode(context: Context, selection: Int)
-    {
-        val selections = context.resources.getStringArray(R.array.night_mode_options);
-
-        val mode: Int = if(selections[selection].contains("dark", true))
-        {
-            AppCompatDelegate.MODE_NIGHT_YES;
-        }
-        else if(selections[selection].contains("light", true))
-        {
-            AppCompatDelegate.MODE_NIGHT_NO;
-        }
-        else
-        {
-            AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
-        }
-
-        AppCompatDelegate.setDefaultNightMode(mode);
-    }
-
-    fun refresh(stored_data: User_settings.Data_storage)
+    fun refresh(stored_data: Data_storage)
     {
         m_combined_response.value = stored_data;
     }
@@ -265,7 +250,9 @@ class Main_view_model(context: Main_activity): ViewModel()
 
                 val value: Array<String> = try
                 {
-                    arrayOf("success", Davis_API.m_davis_API_service.get_weather_station_page());
+                    val page_data = Davis_API.m_davis_API_service.get_weather_station_page();
+                    val weather_page = Weather_page.scrape_page(page_data);
+                    arrayOf("success", weather_page.serialize_to_JSON());
                 }
                 catch(exception: Exception)
                 {
@@ -288,24 +275,299 @@ class Main_view_model(context: Main_activity): ViewModel()
     private suspend fun combine_latest_data(state: Int,
                                             first_value: Array<String>?,
                                             second_value: Array<String>?,
-                                            third_value: Array<String>?): User_settings.Data_storage
+                                            third_value: Array<String>?): Data_storage
     {
         or_state(state);
 
         return if(get_state() == STATE_ALL)
         {
             set_state(STATE_IDLE);
+
             m_is_refreshing.emit(false);
-            User_settings.Data_storage(first_value?.get(0),
-                                       first_value?.get(1),
-                                       second_value?.get(0),
-                                       second_value?.get(1),
-                                       third_value?.get(0),
-                                       third_value?.get(1));
+
+            val data_storage = Data_storage(first_value?.get(0),
+                         first_value?.get(1),
+                         second_value?.get(0),
+                         second_value?.get(1),
+                         third_value?.get(0),
+                         third_value?.get(1));
+
+            m_last_weather_data_fetched = data_storage;
+
+            data_storage;
         }
         else
         {
-            User_settings.Data_storage();
+            Data_storage();
+        }
+    }
+
+    fun is_system_in_night_mode(context: Context): Boolean
+    {
+        return User_settings.is_system_in_night_mode(context);
+    }
+
+    fun load_night_mode_selection(context: Context,
+                                 function: (Int) -> Unit)
+    {
+        viewModelScope.launch()
+        {
+            function(User_settings.get_night_mode_selection(context).first());
+        }
+    }
+
+    fun store_night_mode_selection(context: Context, selection: Int)
+    {
+        viewModelScope.launch()
+        {
+            User_settings.store_night_mode_selection(context, selection);
+            update_night_mode(context, selection);
+        }
+    }
+
+    fun load_download_over_wifi_only(context: Context,
+                                    function: (Boolean) -> Unit)
+    {
+        viewModelScope.launch()
+        {
+            function(User_settings.load_download_over_wifi_only(context).first());
+        }
+    }
+
+    fun store_download_over_wifi_only(context: Context, value: Boolean)
+    {
+        viewModelScope.launch()
+        {
+            User_settings.store_download_over_wifi_only(context, value);
+        }
+    }
+
+    fun load_auto_hide_toolbars(context: Context,
+                               function: (Boolean) -> Unit)
+    {
+        viewModelScope.launch()
+        {
+            function(User_settings.load_auto_hide_toolbars(context).first());
+        }
+    }
+
+    fun store_auto_hide_toolbars(context: Context, value: Boolean)
+    {
+        viewModelScope.launch()
+        {
+            User_settings.store_auto_hide_toolbars(context, value);
+        }
+    }
+
+    fun load_last_weather_data_fetched(context: Context,
+                                function: (Data_storage) -> Unit)
+    {
+        viewModelScope.launch()
+        {
+            function(User_settings.load_last_weather_data_fetched(context).first());
+        }
+    }
+
+    fun store_last_weather_data_fetched(context: Context, data_storage: Data_storage)
+    {
+        viewModelScope.launch()
+        {
+            User_settings.store_last_weather_data_fetched(context, data_storage);
+        }
+    }
+
+    private fun update_night_mode(context: Context, selection: Int)
+    {
+        val selections = context.resources.getStringArray(R.array.night_mode_options);
+
+        val mode: Int = if(selections[selection].contains("dark", true))
+        {
+            AppCompatDelegate.MODE_NIGHT_YES;
+        }
+        else if(selections[selection].contains("light", true))
+        {
+            AppCompatDelegate.MODE_NIGHT_NO;
+        }
+        else
+        {
+            AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+        }
+
+        AppCompatDelegate.setDefaultNightMode(mode);
+    }
+
+    fun is_ok_to_fetch_data(context: Context,
+                            function: (Boolean) -> Unit)
+    {
+        viewModelScope.launch()
+        {
+            function(User_settings.is_ok_to_fetch_data(context).first());
+        }
+    }
+
+    fun is_application_in_night_mode(context: Context): Flow<Boolean>
+    {
+        return User_settings.is_application_in_night_mode(context);
+    }
+
+    private object User_settings
+    {
+        @Suppress("unused")
+        private const val LOG_TAG = "User_settings";
+
+        /**
+         * Weather data URI preferences storage key.
+         */
+        private val DARK_MODE_SELECTION_KEY = intPreferencesKey("dark_mode_selection");
+
+        /**
+         * Download over WiFi only preferences storage key.
+         */
+        private val DOWNLOAD_OVER_WIFI_ONLY_KEY = booleanPreferencesKey("download_over_wifi_only");
+
+        /**
+         * Auto-hide toolbars preferences storage key.
+         */
+        private val AUTO_HIDE_TOOLBARS_KEY = booleanPreferencesKey("auto_hide_toolbars");
+
+        /**
+         * Last weather data fetched successfully.
+         */
+        private val LAST_WEATHER_DATA_FETCHED_KEY = stringPreferencesKey("last_weather_data_fetched");
+
+        private val Context.user_preferences_data_store: DataStore<Preferences> by preferencesDataStore(name = "user_settings");
+
+        fun is_system_in_night_mode(context: Context): Boolean
+        {
+            var current = false;
+            when(context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK))
+            {
+                Configuration.UI_MODE_NIGHT_YES ->
+                {
+                    current = true;
+                }
+            }
+
+            return current;
+        }
+
+        fun get_night_mode_selection(context: Context): Flow<Int>
+        {
+            return context.user_preferences_data_store.data
+                    .map { preferences->
+                        preferences[DARK_MODE_SELECTION_KEY]
+                            ?: context.resources.getInteger(R.integer.night_mode_selection_default);
+                    }
+        }
+
+        fun is_application_in_night_mode(context: Context): Flow<Boolean>
+        {
+            return context.user_preferences_data_store.data
+                    .map { preferences->
+                        val selections = context.resources.getStringArray(R.array.night_mode_options);
+                        val selection = preferences[DARK_MODE_SELECTION_KEY]
+                            ?: context.resources.getInteger(R.integer.night_mode_selection_default);
+
+                        if(selections[selection].contains("dark", true))
+                        {
+                            true;
+                        }
+                        else if(selections[selection].contains("light", true))
+                        {
+                            false;
+                        }
+                        else    // Follow system...
+                        {
+                            is_system_in_night_mode(context);
+                        }
+                    }
+        }
+
+        suspend fun store_night_mode_selection(context: Context, selection: Int)
+        {
+            context.user_preferences_data_store.edit { preferences->
+                preferences[DARK_MODE_SELECTION_KEY] = selection;
+            }
+        }
+
+        fun load_download_over_wifi_only(context: Context): Flow<Boolean>
+        {
+            return context.user_preferences_data_store.data
+                    .map { preferences->
+                        preferences[DOWNLOAD_OVER_WIFI_ONLY_KEY]
+                            ?: context.resources.getBoolean(R.bool.download_over_wifi_only_default);
+                    }
+        }
+
+        suspend fun store_download_over_wifi_only(context: Context, value: Boolean)
+        {
+            context.user_preferences_data_store.edit { preferences->
+                preferences[DOWNLOAD_OVER_WIFI_ONLY_KEY] = value;
+            }
+        }
+
+        fun is_ok_to_fetch_data(context: Context): Flow<Boolean>
+        {
+            return context.user_preferences_data_store.data
+                    .map { preferences->
+                        var is_metered = true;
+
+                        val connectivity_manager =
+                            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager;
+                        val network_capabilities =
+                            connectivity_manager.getNetworkCapabilities(connectivity_manager.activeNetwork);
+                        if(network_capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == false) is_metered =
+                            false;
+                        if(network_capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED) == true) is_metered =
+                            false;
+
+                        val download_over_wifi_only = preferences[DOWNLOAD_OVER_WIFI_ONLY_KEY]
+                            ?: context.resources.getBoolean(R.bool.download_over_wifi_only_default);
+                        val is_ok = !(is_metered && download_over_wifi_only);
+                        is_ok;
+                    }
+        }
+
+        fun load_auto_hide_toolbars(context: Context): Flow<Boolean>
+        {
+            return context.user_preferences_data_store.data
+                    .map { preferences->
+                        preferences[AUTO_HIDE_TOOLBARS_KEY] ?: context.resources.getBoolean(R.bool.auto_hide_toolbars_default);
+                    }
+        }
+
+        suspend fun store_auto_hide_toolbars(context: Context, value: Boolean)
+        {
+            context.user_preferences_data_store.edit { preferences->
+                preferences[AUTO_HIDE_TOOLBARS_KEY] = value;
+            }
+        }
+
+        fun load_last_weather_data_fetched(context: Context): Flow<Data_storage>
+        {
+            return context.user_preferences_data_store.data
+                    .map { preferences->
+                        val data_storage_as_string: String? = preferences[LAST_WEATHER_DATA_FETCHED_KEY];
+                        if(data_storage_as_string == null)
+                        {
+                            Data_storage();
+                        }
+                        else
+                        {
+                            Data_storage.deserialize_from_JSON(data_storage_as_string) ?: Data_storage();
+                        }
+                    }
+        }
+
+        suspend fun store_last_weather_data_fetched(context: Context, data_storage: Data_storage)
+        {
+            val data_storage_as_string = data_storage.serialize_to_JSON();
+            context.user_preferences_data_store.edit { preferences->
+                if(data_storage_as_string != null)
+                {
+                    preferences[LAST_WEATHER_DATA_FETCHED_KEY] = data_storage_as_string;
+                }
+            }
         }
     }
 }

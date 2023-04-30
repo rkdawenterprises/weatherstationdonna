@@ -9,7 +9,6 @@
 package net.ddns.rkdawenterprises.weatherstationdonna
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -21,16 +20,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.Main
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.Main_view_model
 import net.ddns.rkdawenterprises.weatherstationdonna.databinding.ActivityMainBinding
 import java.util.*
-
 
 /**
  * Some older devices needs a small delay between UI widget updates and a change of the status and navigation bar.
@@ -44,10 +39,17 @@ const val TOOLBAR_SHOW_HIDE_ANIMATION_DELAY = 100;
  */
 const val INITIAL_HIDE_DELAY = 500;
 
+/**
+ * The time to delay before automatically hiding the toolbars if auto-hide is enabled.
+ * Time is in milliseconds.
+ */
+const val AUTO_HIDE_TOOLBARS_DELAY = 3500;
+
 class Main_activity: AppCompatActivity()
 {
     companion object
     {
+        @Suppress("unused")
         private const val LOG_TAG = "Main_activity";
     }
 
@@ -55,7 +57,7 @@ class Main_activity: AppCompatActivity()
 
     private val m_show_hide_handler = Handler(Looper.myLooper()!!);
 
-    private val m_weather_data: Main_view_model by viewModels { Main_view_model.Main_view_model_factory(this) };
+    private val m_main_view_model: Main_view_model by viewModels { Main_view_model.Main_view_model_factory(this) };
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -68,8 +70,8 @@ class Main_activity: AppCompatActivity()
         supportActionBar?.setHomeButtonEnabled(true);
         supportActionBar?.setDisplayHomeAsUpEnabled(true);
 
-        val compose_view = m_binding.scrollingContent;
-        compose_view.setContent { Main(this, m_weather_data); }
+        val compose_view = m_binding.contentView;
+        compose_view.setContent { Main(this, m_main_view_model); }
         compose_view.setOnClickListener { toggle(); }
 
         window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
@@ -81,49 +83,57 @@ class Main_activity: AppCompatActivity()
         WindowCompat.setDecorFitsSystemWindows(window, false);
 
         // When interacting with the menu, delay any scheduled hide.
-        supportActionBar?.addOnMenuVisibilityListener { visible->
+        supportActionBar?.addOnMenuVisibilityListener()
+        { visible->
             if(visible)
             {
                 m_show_hide_handler.removeCallbacks(hide_toolbars_runnable);
                 return@addOnMenuVisibilityListener;
             }
-            else if(Main_view_model.s_is_auto_hide_toolbars)
+            else
             {
-                delayed_hide();
+                m_main_view_model.load_auto_hide_toolbars(this)
+                { is_auto_hide_toolbars ->
+                    if(is_auto_hide_toolbars)
+                    {
+                        delayed_hide();
+                    }
+                }
             }
         }
 
-        m_weather_data.combined_response.observe(this) { result->
-            if(( result.first_status == "success") && (result.first_data != null))
-            {
-                Main_view_model.s_last_weather_data_fetched.first_status = result.first_status;
-                Main_view_model.s_last_weather_data_fetched.first_data = result.first_data;
-            }
+//        m_weather_data.combined_response.observe(this)
+//        { result->
+//            if(( result.first_status == "success") && (result.first_data != null))
+//            {
+//                Main_view_model.s_last_weather_data_fetched.first_status = result.first_status;
+//                Main_view_model.s_last_weather_data_fetched.first_data = result.first_data;
+//            }
 
-            if(( result.second_status == "success") && (result.second_data != null))
-            {
-                Main_view_model.s_last_weather_data_fetched.second_status = result.second_status;
-                Main_view_model.s_last_weather_data_fetched.second_data = result.second_data;
-            }
+//            if(( result.second_status == "success") && (result.second_data != null))
+//            {
+//                Main_view_model.s_last_weather_data_fetched.second_status = result.second_status;
+//                Main_view_model.s_last_weather_data_fetched.second_data = result.second_data;
+//            }
 
-            if(( result.third_status == "success") && (result.third_data != null))
-            {
-                Main_view_model.s_last_weather_data_fetched.third_status = result.third_status;
-                Main_view_model.s_last_weather_data_fetched.third_data = result.third_data;
-            }
+//            if(( result.third_status == "success") && (result.third_data != null))
+//            {
+//                Main_view_model.s_last_weather_data_fetched.third_status = result.third_status;
+//                Main_view_model.s_last_weather_data_fetched.third_data = result.third_data;
+//            }
 
-            if(m_binding.swipeToRefresh.isRefreshing)
-            {
-                m_binding.swipeToRefresh.isRefreshing = false;
-            }
-        }
+//            if(m_binding.swipeToRefresh.isRefreshing)
+//            {
+//                m_binding.swipeToRefresh.isRefreshing = false;
+//            }
+//        }
 
-        m_binding.swipeToRefresh.setOnRefreshListener {
-            if(Main_view_model.s_is_ok_to_fetch_data)
-            {
-                m_weather_data.refresh();
-            }
-        }
+//        m_binding.swipeToRefresh.setOnRefreshListener {
+//            if(Main_view_model.s_is_ok_to_fetch_data)
+//            {
+//                m_weather_data.refresh();
+//            }
+//        }
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?)
@@ -237,16 +247,21 @@ class Main_activity: AppCompatActivity()
 
     private val hide_toolbars_runnable = Runnable { hide_toolbars(); }
 
-    private val show_action_bar_runnable = Runnable {
+    private val show_action_bar_runnable = Runnable()
+    {
         supportActionBar?.show();
 
-        if(Main_view_model.s_is_auto_hide_toolbars)
-        {
-            delayed_hide();
+        m_main_view_model.load_auto_hide_toolbars(this)
+        { is_auto_hide_toolbars ->
+            if(is_auto_hide_toolbars)
+            {
+                delayed_hide();
+            }
         }
     }
 
-    private val hide_status_and_navigation_bars_runnable = Runnable {
+    private val hide_status_and_navigation_bars_runnable = Runnable()
+    {
         hide_status_and_navigation_toolbars();
     }
 
@@ -274,7 +289,7 @@ class Main_activity: AppCompatActivity()
      *
      * @return void
      */
-    private fun delayed_hide(delay_in_milliseconds: Int = Main_view_model.s_auto_hide_toolbars_delay)
+    private fun delayed_hide(delay_in_milliseconds: Int = AUTO_HIDE_TOOLBARS_DELAY)
     {
         m_show_hide_handler.removeCallbacks(hide_toolbars_runnable);
         m_show_hide_handler.postDelayed(hide_toolbars_runnable, delay_in_milliseconds.toLong());
@@ -296,12 +311,12 @@ class Main_activity: AppCompatActivity()
     {
         if(Build.VERSION.SDK_INT >= 30)
         {
-            m_binding.scrollingContent.windowInsetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+            m_binding.mainView.windowInsetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
         }
         else
         {
             @Suppress("DEPRECATION")
-            m_binding.scrollingContent.systemUiVisibility =
+            m_binding.mainView.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LOW_PROFILE or
                         View.SYSTEM_UI_FLAG_FULLSCREEN or
                         View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
@@ -315,12 +330,12 @@ class Main_activity: AppCompatActivity()
     {
         if(Build.VERSION.SDK_INT >= 30)
         {
-            m_binding.scrollingContent.windowInsetsController?.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+            m_binding.mainView.windowInsetsController?.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
         }
         else
         {
             @Suppress("DEPRECATION")
-            m_binding.scrollingContent.systemUiVisibility =
+            m_binding.mainView.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
                         View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         }
@@ -337,8 +352,15 @@ class Main_activity: AppCompatActivity()
         menuInflater.inflate(R.menu.main_menu,
                              menu);
 
-        menu.findItem(R.id.action_download_over_wifi_only).isChecked = Main_view_model.s_is_download_over_wifi_only;
-        menu.findItem(R.id.action_auto_hide_toolbars).isChecked = Main_view_model.s_is_auto_hide_toolbars;
+        m_main_view_model.load_download_over_wifi_only(this)
+        { is_download_over_wifi_only ->
+            menu.findItem(R.id.action_download_over_wifi_only).isChecked = is_download_over_wifi_only;
+        }
+
+        m_main_view_model.load_auto_hide_toolbars(this)
+        { is_auto_hide_toolbars ->
+            menu.findItem(R.id.action_auto_hide_toolbars).isChecked = is_auto_hide_toolbars;
+        }
 
         return true
     }
@@ -351,10 +373,13 @@ class Main_activity: AppCompatActivity()
 
         if(item_ID == R.id.action_refresh_weather_data)
         {
-            if(Main_view_model.s_is_ok_to_fetch_data)
-            {
-                m_binding.swipeToRefresh.post { m_binding.swipeToRefresh.isRefreshing = true }
-                m_weather_data.refresh();
+            m_main_view_model.is_ok_to_fetch_data(this)
+            { is_ok_to_fetch_data ->
+                if(is_ok_to_fetch_data)
+                {
+//                    m_binding.swipeToRefresh.post { m_binding.swipeToRefresh.isRefreshing = true }
+                    m_main_view_model.refresh();
+                }
             }
 
             return true;
@@ -364,15 +389,18 @@ class Main_activity: AppCompatActivity()
         {
             val selections = resources.getStringArray(R.array.night_mode_options);
 
-            MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.select_night_mode)
-                    .setSingleChoiceItems(selections, Main_view_model.s_night_mode_selection, null)
-                    .setPositiveButton(resources.getString(R.string.ok)) { dialog, _->
-                        val selection = (dialog as AlertDialog).listView.checkedItemPosition;
-                        m_weather_data.set_night_mode_selection(this, selection);
-                    }
-                    .setNegativeButton(resources.getString(R.string.cancel)) { dialog, _-> dialog.cancel(); }
-                    .show();
+            m_main_view_model.load_night_mode_selection(this)
+            { night_mode_selection ->
+                MaterialAlertDialogBuilder(this)
+                        .setTitle(R.string.select_night_mode)
+                        .setSingleChoiceItems(selections, night_mode_selection, null)
+                        .setPositiveButton(resources.getString(R.string.ok)) { dialog, _->
+                            val selection = (dialog as AlertDialog).listView.checkedItemPosition;
+                            m_main_view_model.store_night_mode_selection(this, selection);
+                        }
+                        .setNegativeButton(resources.getString(R.string.cancel)) { dialog, _-> dialog.cancel(); }
+                        .show();
+            }
 
             return true;
         }
@@ -381,7 +409,7 @@ class Main_activity: AppCompatActivity()
         {
             val changed_value = !item.isChecked;
             item.isChecked = changed_value;
-            m_weather_data.set_download_over_wifi_only(this, changed_value);
+            m_main_view_model.store_download_over_wifi_only(this, changed_value);
 
             return true;
         }
@@ -390,7 +418,7 @@ class Main_activity: AppCompatActivity()
         {
             val changed_value = !item.isChecked;
             item.isChecked = changed_value;
-            m_weather_data.set_auto_hide_toolbars(this, changed_value);
+            m_main_view_model.store_auto_hide_toolbars(this, changed_value);
 
             return true;
         }
@@ -419,10 +447,11 @@ class Main_activity: AppCompatActivity()
 
     override fun onPause()
     {
-//        if(!Main_view_model.s_last_weather_data_fetched.is_empty())
-//        {
-//            m_weather_data.set_last_weather_data_fetched(this, Main_view_model.s_last_weather_data_fetched);
-//        }
+        val data_storage = m_main_view_model.m_last_weather_data_fetched;
+        if(!data_storage.is_empty())
+        {
+            m_main_view_model.store_last_weather_data_fetched(this, data_storage);
+        }
 
         super.onPause()
     }
@@ -431,19 +460,20 @@ class Main_activity: AppCompatActivity()
     {
         super.onResume();
 
-        val context: Context = this;
-        lifecycleScope.launch {
-//            Main_view_model.s_last_weather_data_fetched = User_settings.get_last_data(context).first();
-//
-//            if(!Main_view_model.s_last_weather_data_fetched.is_empty())
-//            {
-//                m_weather_data.refresh(Main_view_model.s_last_weather_data_fetched);
-//            }
-
-            if(User_settings.is_ok_to_fetch_data(context).first())
+        m_main_view_model.load_last_weather_data_fetched(this)
+        { data_storage ->
+            if(!data_storage.is_empty())
             {
-                m_binding.swipeToRefresh.post { m_binding.swipeToRefresh.isRefreshing = true }
-                m_weather_data.refresh();
+                m_main_view_model.refresh(data_storage);
+            }
+        }
+
+        m_main_view_model.is_ok_to_fetch_data(this)
+        { is_ok_to_fetch_data ->
+            if(is_ok_to_fetch_data)
+            {
+//                m_binding.swipeToRefresh.post { m_binding.swipeToRefresh.isRefreshing = true }
+                m_main_view_model.refresh();
             }
         }
     }

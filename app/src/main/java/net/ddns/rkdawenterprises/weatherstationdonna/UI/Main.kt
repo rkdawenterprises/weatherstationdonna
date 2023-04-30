@@ -11,6 +11,7 @@ package net.ddns.rkdawenterprises.weatherstationdonna.UI
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -24,14 +25,15 @@ import androidx.compose.ui.unit.dp
 import net.ddns.rkdawenterprises.weatherstationdonna.Main_activity
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_theme
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.material_colors_extended
-import net.ddns.rkdawenterprises.weatherstationdonna.User_settings
+
+@Suppress("unused")
+private const val LOG_TAG = "Main_composable";
 
 @Composable
 fun Main(main_activity: Main_activity,
          main_view_model: Main_view_model)
 {
-    val is_night_mode = User_settings.is_night_mode_derived(main_activity)
-            .collectAsState(initial = Main_view_model.s_is_night_mode_derived);
+    val is_night_mode = main_view_model.is_application_in_night_mode(main_activity).collectAsState(initial = false);
     val weather_data = main_view_model.combined_response.observeAsState();
 
     Main_theme(main_activity, is_night_mode.value)
@@ -39,12 +41,23 @@ fun Main(main_activity: Main_activity,
         Surface(color = MaterialTheme.material_colors_extended.background,
                 modifier = Modifier.clickable { main_activity.toggle() })
         {
-            Text(text = """${weather_data.value?.first_status} ${System.lineSeparator()}
-                          |${weather_data.value?.first_data} ${System.lineSeparator()} 
-                          |${weather_data.value?.second_status} ${System.lineSeparator()}
-                          |${weather_data.value?.second_data} ${System.lineSeparator()} 
-                          |${weather_data.value?.third_status} ${System.lineSeparator()}
-                          |${weather_data.value?.third_data}""".trimMargin())
+            LazyColumn()
+            {
+                item()
+                {
+                    Text(text = "${weather_data.value?.first_status}${System.lineSeparator()}${weather_data.value?.first_data}");
+                }
+
+                item()
+                {
+                    Text(text = "${weather_data.value?.second_status}${System.lineSeparator()}${weather_data.value?.second_data}");
+                }
+
+                item()
+                {
+                    Text(text = "${weather_data.value?.third_status}${System.lineSeparator()}${weather_data.value?.third_data}");
+                }
+            }
         }
 
 //        modifier = Modifier.clickable(
