@@ -101,135 +101,14 @@ class Main_activity: AppCompatActivity()
                 }
             }
         }
-
-//        m_weather_data.combined_response.observe(this)
-//        { result->
-//            if(( result.first_status == "success") && (result.first_data != null))
-//            {
-//                Main_view_model.s_last_weather_data_fetched.first_status = result.first_status;
-//                Main_view_model.s_last_weather_data_fetched.first_data = result.first_data;
-//            }
-
-//            if(( result.second_status == "success") && (result.second_data != null))
-//            {
-//                Main_view_model.s_last_weather_data_fetched.second_status = result.second_status;
-//                Main_view_model.s_last_weather_data_fetched.second_data = result.second_data;
-//            }
-
-//            if(( result.third_status == "success") && (result.third_data != null))
-//            {
-//                Main_view_model.s_last_weather_data_fetched.third_status = result.third_status;
-//                Main_view_model.s_last_weather_data_fetched.third_data = result.third_data;
-//            }
-
-//            if(m_binding.swipeToRefresh.isRefreshing)
-//            {
-//                m_binding.swipeToRefresh.isRefreshing = false;
-//            }
-//        }
-
-//        m_binding.swipeToRefresh.setOnRefreshListener {
-//            if(Main_view_model.s_is_ok_to_fetch_data)
-//            {
-//                m_weather_data.refresh();
-//            }
-//        }
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?)
     {
         super.onPostCreate(savedInstanceState);
 
-//        if(is_ok_to_fetch_data())
-//        {
-//            m_weather_data.get_weather_data();
-//        }
-
         delayed_hide(INITIAL_HIDE_DELAY);
     }
-
-//        val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-//        val weather_data_JSON_string = shared_prefs.getString(LAST_WEATHER_DATA_FETCHED_KEY, null);
-//        val weather_data_davis_JSON_string = shared_prefs.getString(LAST_WEATHER_DATA_DAVIS_FETCHED_KEY, null);
-//        val weather_page_davis_JSON_string = shared_prefs.getString(LAST_WEATHER_PAGE_DAVIS_FETCHED_KEY, null);
-//        if((weather_data_JSON_string != null)
-//            && (weather_data_davis_JSON_string != null)
-//            && (weather_page_davis_JSON_string != null))
-//        {
-//            val weather_data = Weather_data.deserialize_from_JSON(weather_data_JSON_string);
-//            val weather_data_davis =
-//                net.ddns.rkdawenterprises.davis_website.Weather_data.deserialize_from_JSON(weather_data_davis_JSON_string);
-//            val weather_page_davis =
-//                Weather_page.deserialize_from_JSON(weather_page_davis_JSON_string);
-//            update_UI_with_weather_data(weather_data,
-//                                        weather_data_davis,
-//                                        weather_page_davis);
-//        }
-
-//    private fun check_RKDAWE_response(RKDAWE_result: Array<String>,
-//                                      davis_result: Array<String>,
-//                                      store_update_not: Boolean)
-//    {
-//        val fetch_status = RKDAWE_result[0];
-//        if(fetch_status == "success")
-//        {
-//            Log.d(LOG_TAG, "Got donna data...")
-//            val weather_data_string_JSON = RKDAWE_result[1];
-//            val get_weather_data_response =
-//                Get_weather_station_data_GET_response.deserialize_from_JSON(weather_data_string_JSON);
-//            val status = get_weather_data_response.success;
-//            if(status == "true")
-//            {
-//                check_davis_response(get_weather_data_response.weather_data,
-//                                     davis_result,
-//                                     store_update_not);
-//            }
-//            else
-//            {
-//                display_fetch_issue();
-//            }
-//        }
-//        else
-//        {
-//            display_fetch_issue();
-//        }
-//    }
-
-//    private fun check_davis_response(weather_data: Weather_data,
-//                                     davis_result: Array<String>,
-//                                     store_update_not: Boolean)
-//    {
-//        val fetch_status = davis_result[0];
-//        if(fetch_status == "success")
-//        {
-//            Log.d(LOG_TAG, "Got davis data...")
-//            val parsed: Weather_data_container =
-//                Data_parser.parse(davis_result[2], davis_result[1]);
-//
-//            if(store_update_not)
-//            {
-//                val shared_prefs = getPreferences(Context.MODE_PRIVATE);
-//                val edit = shared_prefs.edit();
-//                edit.putString(LAST_WEATHER_DATA_FETCHED_KEY,
-//                               weather_data.serialize_to_JSON());
-//                edit.putString(LAST_WEATHER_DATA_DAVIS_FETCHED_KEY,
-//                               parsed.json_data.serialize_to_JSON());
-//                edit.putString(LAST_WEATHER_PAGE_DAVIS_FETCHED_KEY,
-//                               parsed.page_data.serialize_to_JSON());
-//                edit.apply();
-//            }
-//            else
-//            {
-//                update_UI_with_weather_data(weather_data,
-//                                            parsed.json_data,
-//                                            parsed.page_data);
-//            }
-//        }
-//        else
-//        {
-//            display_fetch_issue();
-//        }
-//    }
 
 //    private fun display_fetch_issue()
 //    {
@@ -377,7 +256,6 @@ class Main_activity: AppCompatActivity()
             { is_ok_to_fetch_data ->
                 if(is_ok_to_fetch_data)
                 {
-//                    m_binding.swipeToRefresh.post { m_binding.swipeToRefresh.isRefreshing = true }
                     m_main_view_model.refresh();
                 }
             }
@@ -447,10 +325,13 @@ class Main_activity: AppCompatActivity()
 
     override fun onPause()
     {
-        val data_storage = m_main_view_model.m_last_weather_data_fetched;
-        if(!data_storage.is_empty())
+        val data_storage = m_main_view_model.combined_response.value;
+        if(data_storage != null)
         {
-            m_main_view_model.store_last_weather_data_fetched(this, data_storage);
+            if(!data_storage.is_empty())
+            {
+                m_main_view_model.store_last_weather_data_fetched(this, data_storage);
+            }
         }
 
         super.onPause()
@@ -472,58 +353,8 @@ class Main_activity: AppCompatActivity()
         { is_ok_to_fetch_data ->
             if(is_ok_to_fetch_data)
             {
-//                m_binding.swipeToRefresh.post { m_binding.swipeToRefresh.isRefreshing = true }
                 m_main_view_model.refresh();
             }
         }
     }
-
-//    private fun update_UI_with_weather_data(weather_data: Weather_data,
-//                                            json_data: net.ddns.rkdawenterprises.davis_website.Weather_data,
-//                                            page_data: Weather_page)
-//    {
-//        m_binding.systemName.text = weather_data.system_name;
-//
-//        m_binding.conditionsAsOf.text = resources.getString(R.string.conditions_as_of_format,
-//                                                            convert_time_UTC_to_local(weather_data.time,
-//                                                                                      "h:mm a EEEE, MMM d, yyyy"));
-//        val forecast_URI: String =
-//            get_forecast_icon_uri_for_date(convert_time_UTC_to_local(weather_data.time),
-//                                           json_data.forecastOverview);
-//        Glide.with(this).load(forecast_URI).fitCenter().into(m_binding.forecastIcon);
-//
-//        m_binding.currentTemperature.text =
-//            Html.fromHtml("${weather_data.outside_temperature} ${weather_data.temperature_units}",
-//                          Html.FROM_HTML_MODE_COMPACT);
-//
-//        m_binding.todaysTemperatureHigh.text =
-//            Html.fromHtml(getString(R.string.high_format,
-//                                    String.format("%.1f", weather_data.day_hi_out_temp),
-//                                    weather_data.temperature_units),
-//                          Html.FROM_HTML_MODE_COMPACT);
-//
-//        m_binding.todaysTemperatureHighTime.text =
-//            resources.getString(R.string.at_format,
-//                                convert_time_UTC_to_local(weather_data.time_day_hi_out_temp,
-//                                                          "h:mm a"));
-//
-//        m_binding.todaysTemperatureLow.text =
-//            Html.fromHtml(getString(R.string.low_format,
-//                                    String.format("%.1f", weather_data.day_low_out_temp),
-//                                    weather_data.temperature_units),
-//                          Html.FROM_HTML_MODE_COMPACT);
-//
-//        m_binding.todaysTemperatureLowTime.text =
-//            resources.getString(R.string.at_format,
-//                                convert_time_UTC_to_local(weather_data.time_day_low_out_temp,
-//                                                          "h:mm a"));
-//
-//        m_binding.currentHumidity.text =
-//        Html.fromHtml(" ${weather_data.outside_humidity} ${weather_data.humidity_units}",
-//                      Html.FROM_HTML_MODE_COMPACT);
-//
-//        m_binding.humidityDescription.text =
-//            resources.getString(R.string.humidity_description_format, json_data.temperatureFeelLike );
-//
-//    }
 }

@@ -10,14 +10,19 @@ package net.ddns.rkdawenterprises.weatherstationdonna.UI
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -28,10 +33,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.ddns.rkdawenterprises.weatherstationdonna.Main_activity
+import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_shapes
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_theme
+import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_typography
+import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.material_colors_extended
 
 @Suppress("unused")
 private const val LOG_TAG = "Main_composable";
@@ -58,19 +67,44 @@ fun Main(main_activity: Main_activity,
             {
                 item()
                 {
-                    Text(text = "${weather_data.value?.first_status}${System.lineSeparator()}${weather_data.value?.first_data}");
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
 
                 item()
                 {
-                    Text(text = "${weather_data.value?.second_status}${System.lineSeparator()}${weather_data.value?.second_data}");
+                    TextField(
+                        value = "${weather_data.value?.m_data_RKDAWE?.system_name}",
+                        modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp),
+                        colors = TextFieldDefaults.textFieldColors(backgroundColor = MaterialTheme.material_colors_extended.primaryVariant,
+                                                                   disabledTextColor = MaterialTheme.material_colors_extended.onPrimary),
+                        shape = Main_shapes.large,
+                        singleLine = true,
+                        onValueChange = {},
+                        enabled = false,
+                        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center,
+                                                                fontFamily = Main_typography.subtitle1.fontFamily,
+                                                                fontWeight = Main_typography.subtitle1.fontWeight,
+                                                                fontSize = Main_typography.subtitle1.fontSize))
                 }
 
                 item()
                 {
-                    Text(text = "${weather_data.value?.third_status}${System.lineSeparator()}${weather_data.value?.third_data}");
+                    Text(text = "${weather_data.value?.m_data_RKDAWE?.serialize_to_JSON()}");
+                }
+
+                item()
+                {
+                    Text(text = "${weather_data.value?.m_data_davis?.serialize_to_JSON()}");
+                }
+
+                item()
+                {
+                    Text(text = "${weather_data.value?.m_page_davis?.serialize_to_JSON()}");
                 }
             }
+
             PullRefreshIndicator(is_refreshing, pull_refresh_state, Modifier.align(Alignment.TopCenter));
         }
 
@@ -134,6 +168,56 @@ fun Header(text: String,
         )
     }
 }
+
+
+//    private fun update_UI_with_weather_data(weather_data: Weather_data,
+//                                            json_data: net.ddns.rkdawenterprises.davis_website.Weather_data,
+//                                            page_data: Weather_page)
+//    {
+//        m_binding.systemName.text = weather_data.system_name;
+//
+//        m_binding.conditionsAsOf.text = resources.getString(R.string.conditions_as_of_format,
+//                                                            convert_time_UTC_to_local(weather_data.time,
+//                                                                                      "h:mm a EEEE, MMM d, yyyy"));
+//        val forecast_URI: String =
+//            get_forecast_icon_uri_for_date(convert_time_UTC_to_local(weather_data.time),
+//                                           json_data.forecastOverview);
+//        Glide.with(this).load(forecast_URI).fitCenter().into(m_binding.forecastIcon);
+//
+//        m_binding.currentTemperature.text =
+//            Html.fromHtml("${weather_data.outside_temperature} ${weather_data.temperature_units}",
+//                          Html.FROM_HTML_MODE_COMPACT);
+//
+//        m_binding.todaysTemperatureHigh.text =
+//            Html.fromHtml(getString(R.string.high_format,
+//                                    String.format("%.1f", weather_data.day_hi_out_temp),
+//                                    weather_data.temperature_units),
+//                          Html.FROM_HTML_MODE_COMPACT);
+//
+//        m_binding.todaysTemperatureHighTime.text =
+//            resources.getString(R.string.at_format,
+//                                convert_time_UTC_to_local(weather_data.time_day_hi_out_temp,
+//                                                          "h:mm a"));
+//
+//        m_binding.todaysTemperatureLow.text =
+//            Html.fromHtml(getString(R.string.low_format,
+//                                    String.format("%.1f", weather_data.day_low_out_temp),
+//                                    weather_data.temperature_units),
+//                          Html.FROM_HTML_MODE_COMPACT);
+//
+//        m_binding.todaysTemperatureLowTime.text =
+//            resources.getString(R.string.at_format,
+//                                convert_time_UTC_to_local(weather_data.time_day_low_out_temp,
+//                                                          "h:mm a"));
+//
+//        m_binding.currentHumidity.text =
+//        Html.fromHtml(" ${weather_data.outside_humidity} ${weather_data.humidity_units}",
+//                      Html.FROM_HTML_MODE_COMPACT);
+//
+//        m_binding.humidityDescription.text =
+//            resources.getString(R.string.humidity_description_format, json_data.temperatureFeelLike );
+//
+//    }
 
 //        Surface(color = MaterialTheme.material_colors_extended.background) {
 //            Box(Modifier.fillMaxSize(), Alignment.Center) {

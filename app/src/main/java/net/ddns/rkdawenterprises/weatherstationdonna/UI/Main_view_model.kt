@@ -37,7 +37,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import net.ddns.rkdawenterprises.davis_website.Weather_page
+import net.ddns.rkdawenterprises.rkdawe_api_common.Get_weather_station_data_GET_response
 import net.ddns.rkdawenterprises.rkdawe_api_common.RKDAWE_API
+import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
 import net.ddns.rkdawenterprises.weatherstationdonna.Main_activity
 import net.ddns.rkdawenterprises.weatherstationdonna.R
 import net.ddns.rkdawenterprises.weatherstationdonna.davis_website.Davis_API
@@ -54,15 +56,19 @@ class Main_view_model(context: Main_activity): ViewModel()
         }
     }
 
-    class Data_storage(var first_status: String? = null,
-                       var first_data: String? = null,
-                       var second_status: String? = null,
-                       var second_data: String? = null,
-                       var third_status: String? = null,
-                       var third_data: String? = null)
+    /**
+     * Last "successful" fetched weather data. Does not store the failed fetches.
+     */
+    class Data_storage(first_status: String? = null,
+                       first_data: String? = null,
+                       second_status: String? = null,
+                       second_data: String? = null,
+                       third_status: String? = null,
+                       third_data: String? = null)
     {
         companion object
         {
+            @Suppress("unused")
             private const val LOG_TAG = "Data_storage";
 
             private val s_GSON: Gson = GsonBuilder().disableHtmlEscaping()
@@ -94,11 +100,71 @@ class Main_view_model(context: Main_activity): ViewModel()
             }
         }
 
+        init
+        {
+            set_data_RKDAWE(first_status, first_data);
+            set_data_davis(second_status, second_data);
+            set_page_davis(third_status, third_data);
+        }
+
+        var m_data_RKDAWE: Weather_data? = null
+            private set
+        var m_data_davis: net.ddns.rkdawenterprises.davis_website.Weather_data? = null
+            private set
+        var m_page_davis: Weather_page? = null
+            private set
+
+        fun set_data_RKDAWE(status: String?, data: String?): Boolean
+        {
+            if(status == "success")
+            {
+                Log.d(LOG_TAG, "Got RKDAWE data...")
+                val response = Get_weather_station_data_GET_response.deserialize_from_JSON(data);
+                if((response != null) && (response.success == "true"))
+                {
+                    m_data_RKDAWE = response.weather_data;
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        fun set_data_davis(status: String?, data: String?): Boolean
+        {
+            if(status == "success")
+            {
+                Log.d(LOG_TAG, "Got davis data...")
+                val response = net.ddns.rkdawenterprises.davis_website.Weather_data.deserialize_from_JSON(data);
+                if(response != null)
+                {
+                    m_data_davis = response;
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        fun set_page_davis(status: String?, data: String?): Boolean
+        {
+            if(status == "success")
+            {
+                Log.d(LOG_TAG, "Got davis page...")
+                val response = Weather_page.deserialize_from_JSON(data);
+                if(response != null)
+                {
+                    m_page_davis = response;
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         fun is_empty(): Boolean
         {
-            return ((first_status == null) && (first_data == null) &&
-                    (second_status == null) && (second_data == null) &&
-                    (third_status == null) && (third_data == null))
+            return ((m_data_RKDAWE == null) && (m_data_davis == null) && (m_page_davis == null))
         }
 
         fun serialize_to_JSON(): String?
@@ -120,38 +186,10 @@ class Main_view_model(context: Main_activity): ViewModel()
         private const val STATE_ALL = STATE_STARTED or STATE_FIRST or STATE_SECOND or STATE_THIRD;
     }
 
-    /**
-     * Last successful fetched weather data.
-     */
-    var m_last_weather_data_fetched: Data_storage = Data_storage()
-        set(value)
-        {
-            field = value;
-            if(( value.first_status == "success") && (value.first_data != null))
-            {
-                field.first_status = value.first_status;
-                field.first_data = value.first_data;
-            }
-
-            if(( value.second_status == "success") && (value.second_data != null))
-            {
-                field.second_status = value.second_status;
-                field.second_data = value.second_data;
-            }
-
-            if(( value.third_status == "success") && (value.third_data != null))
-            {
-                field.third_status = value.third_status;
-                field.third_data = value.third_data;
-            }
-        }
-
     init
     {
-        m_last_weather_data_fetched = Data_storage();
-
         load_night_mode_selection(context)
-        { night_mode_selection ->
+        { night_mode_selection->
             update_night_mode(context, night_mode_selection);
         }
     }
@@ -285,16 +323,14 @@ class Main_view_model(context: Main_activity): ViewModel()
 
             m_is_refreshing.emit(false);
 
-            val data_storage = Data_storage(first_value?.get(0),
-                         first_value?.get(1),
-                         second_value?.get(0),
-                         second_value?.get(1),
-                         third_value?.get(0),
-                         third_value?.get(1));
+            val data_storageDeprecated = Data_storage(first_value?.get(0),
+                                                      first_value?.get(1),
+                                                      second_value?.get(0),
+                                                      second_value?.get(1),
+                                                      third_value?.get(0),
+                                                      third_value?.get(1));
 
-            m_last_weather_data_fetched = data_storage;
-
-            data_storage;
+            data_storageDeprecated;
         }
         else
         {
@@ -308,7 +344,7 @@ class Main_view_model(context: Main_activity): ViewModel()
     }
 
     fun load_night_mode_selection(context: Context,
-                                 function: (Int) -> Unit)
+                                  function: (Int) -> Unit)
     {
         viewModelScope.launch()
         {
@@ -326,7 +362,7 @@ class Main_view_model(context: Main_activity): ViewModel()
     }
 
     fun load_download_over_wifi_only(context: Context,
-                                    function: (Boolean) -> Unit)
+                                     function: (Boolean) -> Unit)
     {
         viewModelScope.launch()
         {
@@ -343,7 +379,7 @@ class Main_view_model(context: Main_activity): ViewModel()
     }
 
     fun load_auto_hide_toolbars(context: Context,
-                               function: (Boolean) -> Unit)
+                                function: (Boolean) -> Unit)
     {
         viewModelScope.launch()
         {
@@ -360,7 +396,7 @@ class Main_view_model(context: Main_activity): ViewModel()
     }
 
     fun load_last_weather_data_fetched(context: Context,
-                                function: (Data_storage) -> Unit)
+                                       function: (Data_storage) -> Unit)
     {
         viewModelScope.launch()
         {
@@ -368,11 +404,11 @@ class Main_view_model(context: Main_activity): ViewModel()
         }
     }
 
-    fun store_last_weather_data_fetched(context: Context, data_storage: Data_storage)
+    fun store_last_weather_data_fetched(context: Context, data_storageDeprecated: Data_storage)
     {
         viewModelScope.launch()
         {
-            User_settings.store_last_weather_data_fetched(context, data_storage);
+            User_settings.store_last_weather_data_fetched(context, data_storageDeprecated);
         }
     }
 
