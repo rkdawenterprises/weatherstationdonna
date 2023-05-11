@@ -5,19 +5,19 @@
     <item android:id="@+id/action_refresh_weather_data"
         android:title="@string/action_refresh_weather_data"
         android:titleCondensed="@string/action_refresh_weather_data_condensed"
-        android:icon="@drawable/baseline_refresh_24"
+        android:icon="@drawable/refresh_48"
         app:showAsAction="ifRoom"/>
 
     <item android:id="@+id/action_set_night_mode_theme"
         android:title="@string/action_set_night_mode_theme"
         android:titleCondensed="@string/action_set_night_mode_theme_condensed"
-        android:icon="@drawable/baseline_dark_mode_24"
+        android:icon="@drawable/dark_mode_48"
         app:showAsAction="never" />
 
     <item android:id="@+id/action_download_over_wifi_only"
         android:title="@string/action_download_over_wifi_only"
         android:titleCondensed="@string/action_download_over_wifi_only_condensed"
-        android:icon="@drawable/baseline_signal_cellular_off_24"
+        android:icon="@drawable/signal_cellular_off_48"
         app:showAsAction="never"
         android:checkable="true"
         android:checked="true"/>
@@ -25,13 +25,13 @@
     <item android:id="@+id/action_auto_hide_toolbars"
         android:title="@string/action_auto_hide_toolbars"
         android:titleCondensed="@string/action_auto_hide_toolbars_condensed"
-        android:icon="@drawable/baseline_auto_hide_24"
+        android:icon="@drawable/hide_48"
         app:showAsAction="never"
         android:checkable="true"
         android:checked="true"/>
 
     <item android:id="@+id/action_exit"
         android:title="@string/action_exit"
-        android:icon="@drawable/baseline_exit_to_app_24"
+        android:icon="@drawable/exit_to_app_48"
         app:showAsAction="never" />
 </menu>

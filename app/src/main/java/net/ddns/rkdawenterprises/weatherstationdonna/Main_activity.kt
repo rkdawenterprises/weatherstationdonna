@@ -256,7 +256,11 @@ class Main_activity: AppCompatActivity()
             { is_ok_to_fetch_data ->
                 if(is_ok_to_fetch_data)
                 {
-                    m_main_view_model.refresh();
+                    m_main_view_model.refresh(this);
+                }
+                else
+                {
+                    logging_ok_snackbar(resources.getString(R.string.not_allowed_to_get_weather_data_unless_over_wifi));
                 }
             }
 
@@ -303,13 +307,9 @@ class Main_activity: AppCompatActivity()
 
         if((item_ID == android.R.id.home) || (item_ID == R.id.action_exit))
         {
-            val message = String.format("%s %s",
+            logging_ok_snackbar(String.format("%s %s",
                                         resources.getString(R.string.exiting),
-                                        resources.getString(R.string.app_name));
-            Log.d(LOG_TAG, "onOptionsItemSelected: $message");
-            Snackbar.make(m_binding.root,
-                          message,
-                          Snackbar.LENGTH_LONG).setAction(R.string.ok) {}.show();
+                                        resources.getString(R.string.app_name)));
 
             // Allow menu and toast time to close.
             Handler(Looper.getMainLooper()).postDelayed({
@@ -323,14 +323,28 @@ class Main_activity: AppCompatActivity()
         return super.onOptionsItemSelected(item)
     }
 
+    fun logging_ok_snackbar(short_message: String, long_message: String = "")
+    {
+        Log.d(LOG_TAG, "$short_message: $long_message");
+        Snackbar.make(m_binding.root,
+                      short_message,
+                      Snackbar.LENGTH_LONG).setAction(R.string.ok) {}.show();
+    }
+
     override fun onPause()
     {
         val data_storage = m_main_view_model.combined_response.value;
+        // TODO: Only store a good response.
         if(data_storage != null)
         {
             if(!data_storage.is_empty())
             {
-                m_main_view_model.store_last_weather_data_fetched(this, data_storage);
+                if((data_storage.m_data_RKDAWE != null)
+                    && (data_storage.m_data_davis != null)
+                    && (data_storage.m_page_davis != null))
+                {
+                    m_main_view_model.store_last_weather_data_fetched(this, data_storage);
+                }
             }
         }
 
@@ -353,7 +367,11 @@ class Main_activity: AppCompatActivity()
         { is_ok_to_fetch_data ->
             if(is_ok_to_fetch_data)
             {
-                m_main_view_model.refresh();
+                m_main_view_model.refresh(this);
+            }
+            else
+            {
+                logging_ok_snackbar(resources.getString(R.string.not_allowed_to_get_weather_data_unless_over_wifi));
             }
         }
     }
