@@ -34,6 +34,11 @@ private val Domine = FontFamily(
 )
 
 val Main_typography = Typography(
+    h3 = TextStyle(
+        fontFamily = Montserrat,
+        fontWeight = FontWeight.W600,
+        fontSize = 36.sp
+    ),
     h4 = TextStyle(
         fontFamily = Montserrat,
         fontWeight = FontWeight.W600,

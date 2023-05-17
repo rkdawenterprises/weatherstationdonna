@@ -228,10 +228,11 @@ class Main_view_model(context: Main_activity): ViewModel()
 
     fun refresh(stored_data: Data_storage)
     {
+        Log.d(LOG_TAG, "Using stored data...")
         m_combined_response.value = stored_data;
     }
 
-    fun refresh()
+    fun refresh(context: Main_activity)
     {
         if(get_state() == STATE_IDLE)
         {
@@ -246,6 +247,8 @@ class Main_view_model(context: Main_activity): ViewModel()
                 }
                 catch(exception: Exception)
                 {
+                    context.logging_ok_snackbar(context.resources.getString(R.string.unable_to_get_weather_data),
+                                                "Failure fetching RKDAWE data: ${exception.message}");
                     arrayOf("failure", "${exception.message}");
                 }
 
@@ -261,14 +264,14 @@ class Main_view_model(context: Main_activity): ViewModel()
             }
 
             viewModelScope.launch {
-                m_is_refreshing.emit(true);
-
                 val value: Array<String> = try
                 {
                     arrayOf("success", Davis_API.m_davis_API_service.get_weather_station_data());
                 }
                 catch(exception: Exception)
                 {
+                    context.logging_ok_snackbar(context.resources.getString(R.string.unable_to_get_weather_data),
+                                                "Failure fetching davis data: ${exception.message}");
                     arrayOf("failure", "${exception.message}");
                 }
 
@@ -284,8 +287,6 @@ class Main_view_model(context: Main_activity): ViewModel()
             }
 
             viewModelScope.launch {
-                m_is_refreshing.emit(true);
-
                 val value: Array<String> = try
                 {
                     val page_data = Davis_API.m_davis_API_service.get_weather_station_page();
@@ -294,6 +295,8 @@ class Main_view_model(context: Main_activity): ViewModel()
                 }
                 catch(exception: Exception)
                 {
+                    context.logging_ok_snackbar(context.resources.getString(R.string.unable_to_get_weather_data),
+                                                "Failure fetching davis page: ${exception.message}");
                     arrayOf("failure", "${exception.message}");
                 }
 
@@ -323,14 +326,14 @@ class Main_view_model(context: Main_activity): ViewModel()
 
             m_is_refreshing.emit(false);
 
-            val data_storageDeprecated = Data_storage(first_value?.get(0),
-                                                      first_value?.get(1),
-                                                      second_value?.get(0),
-                                                      second_value?.get(1),
-                                                      third_value?.get(0),
-                                                      third_value?.get(1));
+            val data_storage = Data_storage(first_value?.get(0),
+                                            first_value?.get(1),
+                                            second_value?.get(0),
+                                            second_value?.get(1),
+                                            third_value?.get(0),
+                                            third_value?.get(1));
 
-            data_storageDeprecated;
+            data_storage;
         }
         else
         {
@@ -404,11 +407,11 @@ class Main_view_model(context: Main_activity): ViewModel()
         }
     }
 
-    fun store_last_weather_data_fetched(context: Context, data_storageDeprecated: Data_storage)
+    fun store_last_weather_data_fetched(context: Context, data_storage: Data_storage)
     {
         viewModelScope.launch()
         {
-            User_settings.store_last_weather_data_fetched(context, data_storageDeprecated);
+            User_settings.store_last_weather_data_fetched(context, data_storage);
         }
     }
 
