@@ -241,7 +241,7 @@ class Main_view_model(context: Main_activity): ViewModel()
             viewModelScope.launch {
                 m_is_refreshing.emit(true);
 
-                val value: Array<String> = try
+                var value: Array<String> = try
                 {
                     arrayOf("success", RKDAWE_API.m_RKDAWE_API_service.get_weather_station_data());
                 }
@@ -250,6 +250,20 @@ class Main_view_model(context: Main_activity): ViewModel()
                     context.logging_ok_snackbar(context.resources.getString(R.string.unable_to_get_weather_data),
                                                 "Failure fetching RKDAWE data: ${exception.message}");
                     arrayOf("failure", "${exception.message}");
+                }
+
+                if(value[0] == "failure")
+                {
+                    value = try
+                    {
+                        arrayOf("success", RKDAWE_API.m_RKDAWE_API_service.get_weather_station_data());
+                    }
+                    catch(exception: Exception)
+                    {
+                        context.logging_ok_snackbar(context.resources.getString(R.string.unable_to_get_weather_data),
+                                                    "Failure fetching RKDAWE data: ${exception.message}");
+                        arrayOf("failure", "${exception.message}");
+                    }
                 }
 
                 m_first_response.value = value;

@@ -27,6 +27,7 @@
     <!-- Default dark mode setting. -->
     <integer name="night_mode_selection_default">0</integer>
 
+    <string name="system_name_default">Weather Station Donna @ Hot Springs, AR</string>
     <string name="exiting">Exiting</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
@@ -35,6 +36,7 @@
     <string name="select_night_mode">"Select Dark Mode"</string>
     <string name="not_allowed_to_get_weather_data_unless_over_wifi">Not allowed to get weather data unless over WIFI, check settings…</string>
     <string name="dynamic_forecast_icon">Dynamic Forecast Icon</string>
+    <string name="dynamic_forecast_unavailable_icon">Dynamic Forecast Unavailable Icon</string>
     <string name="high_colon">HIGH:</string>
     <string name="low_colon">LOW:</string>
     <string name="at">at</string>
@@ -51,6 +53,7 @@
     <string name="s">S</string>
     <string name="e">E</string>
     <string name="w">W</string>
+    <string name="could_not_download_server_data">Could not download server data</string>
 
 
     
