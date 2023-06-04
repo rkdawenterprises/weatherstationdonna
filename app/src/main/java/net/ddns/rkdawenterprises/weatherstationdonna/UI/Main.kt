@@ -9,21 +9,14 @@
 
 package net.ddns.rkdawenterprises.weatherstationdonna.UI
 
-import android.text.Html
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
@@ -40,35 +33,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
-import net.ddns.rkdawenterprises.davis_website.Weather_data.get_forecast_icon_uri_for_date
 import net.ddns.rkdawenterprises.davis_website.Weather_page
-import net.ddns.rkdawenterprises.rkdawe_api_common.Utilities.convert_time_UTC_to_local
-import net.ddns.rkdawenterprises.rkdawe_api_common.Utilities.convert_timestamp_to_local
 import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
 import net.ddns.rkdawenterprises.weatherstationdonna.Main_activity
 import net.ddns.rkdawenterprises.weatherstationdonna.R
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_theme
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_typography
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.material_colors_extended
-import java.time.ZonedDateTime
-import kotlin.math.cos
-import kotlin.math.sin
 
 @Suppress("unused")
 private const val LOG_TAG = "Main_composable";
@@ -102,29 +78,35 @@ fun Main(main_activity: Main_activity,
                 if((weather_data_RKDAWE != null) || (weather_data_davis != null))
                 {
                     LazyColumn(modifier = Modifier.fillMaxSize(),
-                               verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        item() {
+                               verticalArrangement = Arrangement.spacedBy(10.dp))
+                    {
+                        item()
+                        {
                             Spacer(modifier = Modifier.height(20.dp));
                         }
 
-                        item() {
+                        item()
+                        {
                             Header(weather_data_RKDAWE,
                                    weather_page);
                         }
 
-                        item() {
+                        item()
+                        {
                             Temperatures(weather_data_RKDAWE,
                                          weather_data_davis);
                         }
 
-                        item() {
+                        item()
+                        {
                             Divider(color = MaterialTheme.material_colors_extended.view_divider,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(4.dp))
                         }
 
-                        item() {
+                        item()
+                        {
                             Conditions(weather_data_RKDAWE,
                                        weather_data_davis);
                         }
@@ -182,444 +164,11 @@ fun Header(weather_data_RKDAWE: Weather_data?,
               onValueChange = {},
               enabled = false,
               textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center,
-                                                      fontFamily = Main_typography.subtitle1.fontFamily,
-                                                      fontWeight = Main_typography.subtitle1.fontWeight,
-                                                      fontSize = Main_typography.subtitle1.fontSize))
-}
-
-@Composable
-fun Temperatures(weather_data_RKDAWE: Weather_data?,
-                 weather_data_davis: net.ddns.rkdawenterprises.davis_website.Weather_data?)
-{
-    ConstraintLayout() {
-        val (forecast_icon, current_temperature, vertical_divider, todays_temperature_high, todays_temperature_high_time, todays_temperature_low, todays_temperature_low_time) = createRefs();
-
-        val timestamp: ZonedDateTime? = if(weather_data_RKDAWE != null)
-        {
-            convert_time_UTC_to_local(weather_data_RKDAWE.time);
-        }
-        else if(weather_data_davis != null)
-        {
-            convert_timestamp_to_local(weather_data_davis.lastReceived,
-                                       weather_data_davis.timeZoneId);
-        }
-        else null;
-
-        val forecast_URI: String? = if(weather_data_davis != null)
-        {
-            get_forecast_icon_uri_for_date(timestamp,
-                                           weather_data_davis.forecastOverview);
-        }
-        else null;
-
-        if(forecast_URI != null)
-        {
-            AsyncImage(model = forecast_URI,
-                       contentDescription = stringResource(id = R.string.dynamic_forecast_icon),
-                       modifier = Modifier
-                           .constrainAs(forecast_icon) {
-                               top.linkTo(parent.top,
-                                          margin = 5.dp)
-                               start.linkTo(parent.start,
-                                            margin = 5.dp)
-                           }
-                           .height(75.dp)
-                           .width(60.dp),
-                       contentScale = ContentScale.Fit,
-                       alignment = Alignment.Center);
-        }
-        else
-        {
-            Image(painterResource(R.drawable.sunny_48),
-                  contentDescription = stringResource(id = R.string.dynamic_forecast_unavailable_icon),
-                  modifier = Modifier
-                      .constrainAs(forecast_icon) {
-                          top.linkTo(parent.top,
-                                     margin = 5.dp)
-                          start.linkTo(parent.start,
-                                       margin = 5.dp)
-                      }
-                      .height(75.dp)
-                      .width(60.dp));
-        }
-
-        val current_temperature_text: String? =
-        if(weather_data_RKDAWE != null)
-        {
-            Html.fromHtml("${String.format("%.1f ", weather_data_RKDAWE.outside_temperature)} ${
-                weather_data_RKDAWE.temperature_units}", Html.FROM_HTML_MODE_COMPACT).toString();
-        }
-        else if(weather_data_davis != null)
-        {
-            Html.fromHtml("${weather_data_davis.temperature} ${weather_data_davis.tempUnits}",
-                          Html.FROM_HTML_MODE_COMPACT).toString();
-        }
-        else null;
-
-        if(current_temperature_text != null)
-        {
-            Text(current_temperature_text,
-                 modifier = Modifier.constrainAs(current_temperature) {
-                     top.linkTo(forecast_icon.top)
-                     bottom.linkTo(forecast_icon.bottom)
-                     start.linkTo(forecast_icon.end,
-                                  margin = 10.dp)
-                     end.linkTo(vertical_divider.start)
-                 },
-                 style = Main_typography.h4);
-        }
-
-        Divider(color = MaterialTheme.material_colors_extended.view_divider,
-                modifier = Modifier
-                    .constrainAs(vertical_divider) {
-                        top.linkTo(forecast_icon.top)
-                        bottom.linkTo(forecast_icon.bottom)
-                        start.linkTo(current_temperature.end,
-                                     margin = 10.dp)
-                        end.linkTo(todays_temperature_high.start)
-                        height = Dimension.fillToConstraints
-                    }
-                    .width(2.dp));
-
-        val todays_temperature_high_text: String? =
-            if(weather_data_RKDAWE != null)
-            {
-                Html.fromHtml("${stringResource(id = R.string.high_colon)} ${
-                    String.format("%.1f ", weather_data_RKDAWE.day_hi_out_temp)
-                } ${weather_data_RKDAWE.temperature_units}", Html.FROM_HTML_MODE_COMPACT).toString();
-            }
-            else if(weather_data_davis != null)
-            {
-                Html.fromHtml("${stringResource(id = R.string.high_colon)} ${weather_data_davis.hiTemp} ${
-                    weather_data_davis.tempUnits}", Html.FROM_HTML_MODE_COMPACT).toString();
-            }
-            else null;
-
-        if(todays_temperature_high_text != null)
-        {
-            Text(todays_temperature_high_text,
-                 modifier = Modifier.constrainAs(todays_temperature_high) {
-                     top.linkTo(vertical_divider.top)
-                     bottom.linkTo(todays_temperature_low.top)
-                     start.linkTo(vertical_divider.end,
-                                  margin = 10.dp)
-                     end.linkTo(todays_temperature_high_time.start)
-                 },
-                 style = Main_typography.subtitle1,
-                 textAlign = TextAlign.Left)
-        };
-
-        val todays_temperature_high_time_text: String? =
-            if(weather_data_RKDAWE != null)
-            {
-                "${stringResource(id = R.string.at)} ${
-                    convert_time_UTC_to_local(weather_data_RKDAWE.time_day_hi_out_temp,"h:mm a")}"
-            }
-            else if(weather_data_davis != null)
-            {
-                "${stringResource(id = R.string.at)} ${convert_timestamp_to_local(weather_data_davis.hiTempDate,
-                                                                           weather_data_davis.timeZoneId)}"
-            }
-            else null;
-
-        if(todays_temperature_high_time_text != null)
-        {
-            Text(todays_temperature_high_time_text,
-                 modifier = Modifier.constrainAs(todays_temperature_high_time) {
-                     top.linkTo(todays_temperature_high.top)
-                     bottom.linkTo(todays_temperature_high.bottom)
-                     start.linkTo(todays_temperature_high.end,
-                                  margin = 5.dp)
-                 },
-                 style = Main_typography.body1,
-                 textAlign = TextAlign.Left)
-        };
-
-        val todays_temperature_low_text: String? =
-            if(weather_data_RKDAWE != null)
-            {
-                Html.fromHtml("${stringResource(id = R.string.low_colon)} ${
-                    String.format("%.1f ", weather_data_RKDAWE.day_low_out_temp)
-                } ${weather_data_RKDAWE.temperature_units}", Html.FROM_HTML_MODE_COMPACT).toString();
-            }
-            else if(weather_data_davis != null)
-            {
-                Html.fromHtml("${stringResource(id = R.string.high_colon)} ${weather_data_davis.loTemp} ${
-                    weather_data_davis.tempUnits}", Html.FROM_HTML_MODE_COMPACT).toString();
-            }
-            else null;
-
-        if(todays_temperature_low_text != null)
-        {
-            Text(todays_temperature_low_text,
-                 modifier = Modifier.constrainAs(todays_temperature_low) {
-                     top.linkTo(todays_temperature_high.bottom)
-                     bottom.linkTo(vertical_divider.bottom)
-                     start.linkTo(vertical_divider.end,
-                                  margin = 10.dp)
-                     end.linkTo(todays_temperature_low_time.start)
-                 },
-                 style = Main_typography.subtitle1,
-                 textAlign = TextAlign.Left)
-        };
-
-        val todays_temperature_low_time_text: String? =
-            if(weather_data_RKDAWE != null)
-            {
-                "${stringResource(id = R.string.at)} ${
-                    convert_time_UTC_to_local(weather_data_RKDAWE.time_day_low_out_temp,"h:mm a")}"
-            }
-            else if(weather_data_davis != null)
-            {
-                "${stringResource(id = R.string.at)} ${convert_timestamp_to_local(weather_data_davis.loTempDate, 
-                                                                           weather_data_davis.timeZoneId)}"
-            }
-            else null;
-
-        if(todays_temperature_low_time_text != null)
-        {
-            Text(todays_temperature_low_time_text,
-                 modifier = Modifier.constrainAs(todays_temperature_low_time) {
-                     top.linkTo(todays_temperature_low.top)
-                     bottom.linkTo(todays_temperature_low.bottom)
-                     start.linkTo(todays_temperature_low.end,
-                                  margin = 5.dp)
-                 },
-                 style = Main_typography.body1,
-                 textAlign = TextAlign.Left)
-        };
-    }
-}
-
-@Composable
-fun Conditions(weather_data_RKDAWE: Weather_data?,
-               weather_data_davis: net.ddns.rkdawenterprises.davis_website.Weather_data?)
-{
-    Column() {
-        Humidity_row(weather_data_RKDAWE,
-                     weather_data_davis);
-
-        Spacer(modifier = Modifier.height(10.dp));
-
-        Divider(color = MaterialTheme.material_colors_extended.view_divider,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(2.dp));
-
-        Wind_row1(weather_data_RKDAWE,
-                  weather_data_davis);
-        Wind_row2(weather_data_RKDAWE,
-                  weather_data_davis);
-
-        Spacer(modifier = Modifier.height(10.dp));
-
-        Divider(color = MaterialTheme.material_colors_extended.view_divider,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(2.dp));
-    }
-}
-
-@Composable
-fun Humidity_row(weather_data_RKDAWE: Weather_data?,
-                 weather_data_davis: net.ddns.rkdawenterprises.davis_website.Weather_data?)
-{
-    Row(modifier = Modifier.padding(top = 10.dp),
-        verticalAlignment = Alignment.CenterVertically) {
-        Image(painterResource(R.drawable.humidity_percentage_48),
-              contentDescription = stringResource(id = R.string.humidity_icon),
-              modifier = Modifier
-                  .height(50.dp)
-                  .width(45.dp));
-
-        Text(stringResource(R.string.humidity_colon),
-             modifier = Modifier
-                 .weight(0.9f,
-                         fill = true)
-                 .padding(start = 5.dp),
-             style = Main_typography.subtitle1);
-
-        val current_humidity_text: String? =
-            if(weather_data_RKDAWE != null)
-            {
-                Html.fromHtml("${weather_data_RKDAWE.outside_humidity} ${
-                    weather_data_RKDAWE.humidity_units}", Html.FROM_HTML_MODE_COMPACT).toString();
-            }
-            else if(weather_data_davis != null)
-            {
-                "${weather_data_davis.humidity} %}"
-            }
-            else null;
-
-        if(current_humidity_text != null)
-        {
-            Text(current_humidity_text,
-                 modifier = Modifier.weight(0.65f,
-                                            fill = true),
-                 style = Main_typography.subtitle1)
-        };
-
-        val feels_like_temperature_text: String? =
-            if(weather_data_davis != null)
-            {
-                Html.fromHtml("${stringResource(id = R.string.feels_like)} ${
-                    weather_data_davis.temperatureFeelLike} ${weather_data_davis.tempUnits}",
-                              Html.FROM_HTML_MODE_COMPACT).toString();
-            }
-            else if(weather_data_RKDAWE != null)
-            {
-                Html.fromHtml("${stringResource(id = R.string.feels_like)} ${
-                    weather_data_RKDAWE.outside_temperature} ${weather_data_RKDAWE.temperature_units}",
-                              Html.FROM_HTML_MODE_COMPACT).toString();
-            }
-            else null;
-
-        if(feels_like_temperature_text != null)
-        {
-            Text(feels_like_temperature_text,
-                 modifier = Modifier.weight(2f,
-                                            fill = true),
-                 style = Main_typography.body1)
-        };
-    }
-}
-
-@Composable
-fun Wind_row1(weather_data_RKDAWE: Weather_data?,
-              weather_data_davis: net.ddns.rkdawenterprises.davis_website.Weather_data?)
-{
-    if((weather_data_RKDAWE != null) && (weather_data_davis != null))
-    {
-        Row(modifier = Modifier.padding(top = 10.dp),
-            verticalAlignment = Alignment.CenterVertically) {
-            Image(painterResource(R.drawable.air_48),
-                  contentDescription = stringResource(id = R.string.wind_icon),
-                  modifier = Modifier
-                      .height(50.dp)
-                      .width(45.dp));
-
-            Text(stringResource(R.string.wind_colon),
-                 modifier = Modifier
-                     .weight(0.9f,
-                             fill = true)
-                     .padding(start = 5.dp),
-                 style = Main_typography.subtitle1);
-
-            val current_wind_text = "${weather_data_RKDAWE.wind_speed} ${
-                weather_data_RKDAWE.wind_speed_units
-            }"
-
-            Text(current_wind_text,
-                 modifier = Modifier.weight(0.65f,
-                                            fill = true),
-                 style = Main_typography.subtitle1);
-
-            val day_high_text = "${stringResource(id = R.string.peak)} ${
-                weather_data_RKDAWE.daily_hi_wind_speed
-            } ${weather_data_RKDAWE.wind_speed_units} ${
-                stringResource(id = R.string.at)
-            } ${
-                convert_time_UTC_to_local(weather_data_RKDAWE.time_of_hi_speed,
-                                          "h:mm a")
-            }"
-
-            Text(day_high_text,
-                 modifier = Modifier.weight(2f,
-                                            fill = true),
-                 style = Main_typography.body1);
-        }
-    }
-}
-
-@Composable
-fun Wind_row2(weather_data_RKDAWE: Weather_data?,
-              weather_data_davis: net.ddns.rkdawenterprises.davis_website.Weather_data?)
-{
-    if((weather_data_RKDAWE != null) && (weather_data_davis != null))
-    {
-        Row(modifier = Modifier.padding(top = 10.dp),
-            verticalAlignment = Alignment.CenterVertically) {
-            Compass(
-                modifier = Modifier
-                    .size(70.dp)
-                    .weight(1f,
-                            fill = true),
-                angle = weather_data_RKDAWE.wind_direction,
-                marker_degrees_step = 30,
-                   );
-
-            Column(modifier = Modifier
-                .weight(1.5f,
-                        fill = true)
-                .padding(start = 10.dp),
-                   verticalArrangement = Arrangement.spacedBy(5.dp)) {
-
-                Text("${stringResource(id = R.string.two_minute_average)} ${
-                    weather_data_RKDAWE.two_min_avg_wind_speed
-                } ${weather_data_RKDAWE.wind_speed_units}",
-                     style = Main_typography.body1);
-
-                Text("${stringResource(id = R.string.ten_minute_average)} ${
-                    weather_data_RKDAWE.ten_min_avg_wind_speed
-                } ${weather_data_RKDAWE.wind_speed_units}",
-                     style = Main_typography.body1);
-
-                Text(Html.fromHtml("${stringResource(id = R.string.ten_minute_gust)} ${
-                    weather_data_RKDAWE.ten_min_wind_gust
-                } ${weather_data_RKDAWE.wind_speed_units} ${
-                    stringResource(id = R.string.at)
-                } ${weather_data_RKDAWE.wind_direction_of_ten_min_wind_gust} ${
-                    weather_data_RKDAWE.wind_direction_units
-                }",
-                                   Html.FROM_HTML_MODE_COMPACT).toString(),
-                     style = Main_typography.body1);
-            }
-        }
-    }
+                                                      fontFamily = Main_typography.h6.fontFamily,
+                                                      fontWeight = Main_typography.h6.fontWeight,
+                                                      fontSize = Main_typography.h6.fontSize))
 }
 
 //        m_binding.conditionsAsOf.text = resources.getString(R.string.conditions_as_of_format,
 //                                                            convert_time_UTC_to_local(weather_data.time,
 //                                                                                      "h:mm a EEEE, MMM d, yyyy"));
-
-@Composable
-fun Circular_progress_bar(modifier: Modifier = Modifier,
-                          percentage: Float,
-                          fillColor: Color,
-                          backgroundColor: Color,
-                          strokeWidth: Dp)
-{
-    Canvas(modifier = modifier
-        .size(150.dp)
-        .padding(10.dp)) {
-        // Background Line
-        drawArc(color = backgroundColor,
-                140f,
-                260f,
-                false,
-                style = Stroke(strokeWidth.toPx(),
-                               cap = StrokeCap.Round),
-                size = Size(size.width,
-                            size.height))
-
-        drawArc(color = fillColor,
-                140f,
-                percentage * 260f,
-                false,
-                style = Stroke(strokeWidth.toPx(),
-                               cap = StrokeCap.Round),
-                size = Size(size.width,
-                            size.height))
-
-
-        var angleInDegrees = (percentage * 260.0) + 50.0
-        var radius = (size.height / 2)
-        var x = -(radius * sin(Math.toRadians(angleInDegrees))).toFloat() + (size.width / 2)
-        var y = (radius * cos(Math.toRadians(angleInDegrees))).toFloat() + (size.height / 2)
-
-        drawCircle(color = Color.White,
-                   radius = 5f,
-                   center = Offset(x,
-                                   y))
-    }
-}
