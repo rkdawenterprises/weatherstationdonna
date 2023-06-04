@@ -43,6 +43,7 @@
     <string name="humidity_icon">Humidity Icon</string>
     <string name="humidity_colon">Humidity:</string>
     <string name="feels_like">Feels like</string>
+    <string name="wind_chill">Wind chill</string>
     <string name="wind_icon">Wind Icon</string>
     <string name="wind_colon">Wind:</string>
     <string name="peak">Peak:</string>
@@ -54,6 +55,16 @@
     <string name="e">E</string>
     <string name="w">W</string>
     <string name="could_not_download_server_data">Could not download server data</string>
+    <string name="rain_colon">Rain:</string>
+    <string name="rain_rate">Rain rate</string>
+    <string name="seasonal_total">Seasonal total</string>
+    <string name="month_total">Month total</string>
+    <string name="day_total">Day total</string>
+    <string name="last_twenty_four_hour">Last 24 Hr</string>
+    <string name="last_fifteen_minute">Last 15 min</string>
+    <string name="last_hour">Last hour</string>
+    <string name="barometer_colon">Barometer:</string>
+    <string name="barometer_trend">Trend:</string>
 
 
     
