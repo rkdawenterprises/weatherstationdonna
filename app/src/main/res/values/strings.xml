@@ -28,6 +28,7 @@
     <integer name="night_mode_selection_default">0</integer>
 
     <string name="system_name_default">Weather Station Donna @ Hot Springs, AR</string>
+    <string name="conditions_as_of_colon">Conditions as of: </string>
     <string name="exiting">Exiting</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
@@ -65,9 +66,9 @@
     <string name="last_hour">Last hour</string>
     <string name="barometer_colon">Barometer:</string>
     <string name="barometer_trend">Trend:</string>
+    <string name="all_data">All Data</string>
 
 
     
-    <string name="conditions_as_of_format">Conditions as of: </string>
 
 </resources>

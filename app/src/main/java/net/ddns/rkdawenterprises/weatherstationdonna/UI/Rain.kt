@@ -83,48 +83,42 @@ fun Rain(weather_data_RKDAWE: Weather_data?,
         {
             if(weather_data_RKDAWE != null)
             {
-                Text("${stringResource(R.string.rain_rate)} ${
-                    String.format("%.1f ", weather_data_RKDAWE.rain_rate)} ${
+                Text("${stringResource(R.string.rain_rate)} ${weather_data_RKDAWE.rain_rate} ${
                     weather_data_RKDAWE.rain_rate_units}",
                      style = Main_typography.subtitle1)
             };
 
             if(weather_data_RKDAWE != null)
             {
-                Text("${stringResource(R.string.last_fifteen_minute)} ${
-                    String.format("%.1f ", weather_data_RKDAWE.last_fifteen_min_rain)} ${
+                Text("${stringResource(R.string.last_fifteen_minute)} ${weather_data_RKDAWE.last_fifteen_min_rain} ${
                     weather_data_RKDAWE.rain_units}",
                      style = Main_typography.subtitle1)
             };
 
             if(weather_data_RKDAWE != null)
             {
-                Text("${stringResource(R.string.last_hour)} ${
-                    String.format("%.1f ", weather_data_RKDAWE.last_hour_rain)} ${
+                Text("${stringResource(R.string.last_hour)} ${weather_data_RKDAWE.last_hour_rain} ${
                     weather_data_RKDAWE.rain_units}",
                      style = Main_typography.subtitle1)
             };
 
             if(weather_data_RKDAWE != null)
             {
-                Text("${stringResource(R.string.day_total)} ${
-                    String.format("%.1f ", weather_data_RKDAWE.daily_rain)} ${
+                Text("${stringResource(R.string.day_total)} ${weather_data_RKDAWE.daily_rain} ${
                     weather_data_RKDAWE.rain_units}",
                      style = Main_typography.subtitle1)
             };
 
             if(weather_data_RKDAWE != null)
             {
-                Text("${stringResource(R.string.last_twenty_four_hour)} ${
-                    String.format("%.1f ", weather_data_RKDAWE.last_twenty_four_hour_rain)} ${
+                Text("${stringResource(R.string.last_twenty_four_hour)} ${weather_data_RKDAWE.last_twenty_four_hour_rain} ${
                     weather_data_RKDAWE.rain_units}",
                      style = Main_typography.subtitle1)
             };
 
             if(weather_data_RKDAWE != null)
             {
-                Text("${stringResource(R.string.month_total)} ${
-                    String.format("%.1f ", weather_data_RKDAWE.month_rain)} ${
+                Text("${stringResource(R.string.month_total)} ${weather_data_RKDAWE.month_rain} ${
                     weather_data_RKDAWE.rain_units}",
                      style = Main_typography.subtitle1)
             };
@@ -132,8 +126,7 @@ fun Rain(weather_data_RKDAWE: Weather_data?,
             val seasonal_total_rain_text: String? =
                 if(weather_data_RKDAWE != null)
                 {
-                    "${stringResource(id = R.string.seasonal_total)} ${
-                        String.format("%.1f ", weather_data_RKDAWE.year_rain)} ${
+                    "${stringResource(id = R.string.seasonal_total)} ${weather_data_RKDAWE.year_rain} ${
                         weather_data_RKDAWE.rain_units}";
                 }
                 else if(weather_data_davis != null)

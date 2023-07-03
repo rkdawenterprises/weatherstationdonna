@@ -81,7 +81,7 @@ fun Conditions(weather_data_RKDAWE: Weather_data?,
                weather_data_davis: net.ddns.rkdawenterprises.davis_website.Weather_data?)
 {
     val spaced_by = 5.dp;
-    val column_weights = floatArrayOf(1.9f, 1.1f, 3f);
+    val column_weights = floatArrayOf(1.7f, 1.2f, 3f);
     val icon_size = arrayOf(45.dp,50.dp);
 
     Column(modifier = Modifier.fillMaxSize(),
@@ -119,8 +119,5 @@ fun Conditions(weather_data_RKDAWE: Weather_data?,
                   spaced_by,
                   column_weights,
                   icon_size);
-
-        Divider(color = MaterialTheme.material_colors_extended.view_divider,
-                modifier = Modifier.fillMaxWidth().height(2.dp));
     }
 }

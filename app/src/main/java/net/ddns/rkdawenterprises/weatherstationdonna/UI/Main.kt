@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.ddns.rkdawenterprises.davis_website.Weather_page
+import net.ddns.rkdawenterprises.rkdawe_api_common.Utilities.convert_time_UTC_to_local
 import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
 import net.ddns.rkdawenterprises.weatherstationdonna.Main_activity
 import net.ddns.rkdawenterprises.weatherstationdonna.R
@@ -88,6 +89,7 @@ fun Main(main_activity: Main_activity,
                         item()
                         {
                             Header(weather_data_RKDAWE,
+                                   weather_data_davis,
                                    weather_page);
                         }
 
@@ -109,6 +111,11 @@ fun Main(main_activity: Main_activity,
                         {
                             Conditions(weather_data_RKDAWE,
                                        weather_data_davis);
+                        }
+
+                        item()
+                        {
+                            Data_table(weather_data_RKDAWE);
                         }
 
                         item() {
@@ -140,6 +147,7 @@ fun Main(main_activity: Main_activity,
 
 @Composable
 fun Header(weather_data_RKDAWE: Weather_data?,
+           weather_data_davis: net.ddns.rkdawenterprises.davis_website.Weather_data?,
            weather_page: Weather_page?)
 {
     val system_name = if(weather_data_RKDAWE != null)
@@ -155,6 +163,18 @@ fun Header(weather_data_RKDAWE: Weather_data?,
         stringResource(id = R.string.system_name_default);
     }
 
+    val as_of = if(weather_data_RKDAWE != null)
+    {
+        "${stringResource(id = R.string.conditions_as_of_colon)} ${
+            convert_time_UTC_to_local(weather_data_RKDAWE.time, "h:mm a EEEE, MMM d, yyyy")}"
+    }
+    else
+    {
+        "${stringResource(id = R.string.conditions_as_of_colon)} ${
+            convert_time_UTC_to_local(java.time.LocalDateTime.now().atZone(java.time.ZoneId.of("UTC")).toString(),
+                                      "h:mm a EEEE, MMM d, yyyy")}"
+    }
+
     TextField(value = system_name,
               modifier = Modifier.fillMaxWidth(),
               colors = TextFieldDefaults.textFieldColors(backgroundColor = MaterialTheme.material_colors_extended.primaryVariant,
@@ -168,7 +188,3 @@ fun Header(weather_data_RKDAWE: Weather_data?,
                                                       fontWeight = Main_typography.h6.fontWeight,
                                                       fontSize = Main_typography.h6.fontSize))
 }
-
-//        m_binding.conditionsAsOf.text = resources.getString(R.string.conditions_as_of_format,
-//                                                            convert_time_UTC_to_local(weather_data.time,
-//                                                                                      "h:mm a EEEE, MMM d, yyyy"));

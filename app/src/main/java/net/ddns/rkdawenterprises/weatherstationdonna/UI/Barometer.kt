@@ -25,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import net.ddns.rkdawenterprises.rkdawe_api_common.Utilities
 import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
 import net.ddns.rkdawenterprises.weatherstationdonna.R
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_typography
@@ -59,7 +60,7 @@ fun Barometer(weather_data_RKDAWE: Weather_data?,
         val barometric_pressure_text: String? =
             if(weather_data_RKDAWE != null)
             {
-                "${String.format("%.1f ", weather_data_RKDAWE.barometer)} ${weather_data_RKDAWE.barometer_units}";
+                "${String.format("%.2f ", weather_data_RKDAWE.barometer)}\n${weather_data_RKDAWE.barometer_units}";
             }
             else if(weather_data_davis != null)
             {
@@ -99,12 +100,23 @@ fun Barometer(weather_data_RKDAWE: Weather_data?,
 
             if(weather_data_RKDAWE != null)
             {
-                Text("${stringResource(R.string.month_total)} ${
-                    String.format("%.1f ", weather_data_RKDAWE.daily_high_barometer)} ${
-                    weather_data_RKDAWE.rain_units}",
+                Text("${stringResource(R.string.high_colon)} ${
+                    String.format("%.2f ", weather_data_RKDAWE.daily_high_barometer)} ${
+                    weather_data_RKDAWE.barometer_units} ${stringResource(id = R.string.at)} ${
+                    Utilities.convert_time_UTC_to_local(weather_data_RKDAWE.time_of_day_high_bar,
+                                                        "h:mm a")}",
                      style = Main_typography.subtitle1)
             };
 
+            if(weather_data_RKDAWE != null)
+            {
+                Text("${stringResource(R.string.low_colon)} ${
+                    String.format("%.2f ", weather_data_RKDAWE.daily_low_barometer)} ${
+                    weather_data_RKDAWE.barometer_units} ${stringResource(id = R.string.at)} ${
+                    Utilities.convert_time_UTC_to_local(weather_data_RKDAWE.time_of_day_low_bar,
+                                                        "h:mm a")}",
+                     style = Main_typography.subtitle1)
+            };
         }
     }
 }
