@@ -1,9 +1,26 @@
+<!--
+  ~ Copyright (c) 2019-2023 RKDAW Enterprises and Ralph Williamson.
+  ~       email: rkdawenterprises@gmail.com
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="48dp"
     android:height="48dp"
+    android:tint="?attr/colorControlNormal"
     android:viewportWidth="960"
     android:viewportHeight="960">
-  <path
-      android:fillColor="#FF000000"
-      android:pathData="M180,840Q156,840 138,822Q120,804 120,780L120,570L180,570L180,780Q180,780 180,780Q180,780 180,780L780,780Q780,780 780,780Q780,780 780,780L780,178Q780,178 780,178Q780,178 780,178L180,178Q180,178 180,178Q180,178 180,178L180,390L120,390L120,178Q120,154 138,136Q156,118 180,118L780,118Q804,118 822,136Q840,154 840,178L840,780Q840,804 822,822Q804,840 780,840L180,840ZM413,673L368,628L486,510L120,510L120,450L486,450L368,332L413,287L606,480L413,673Z"/>
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M180,840Q156,840 138,822Q120,804 120,780L120,570L180,570L180,780Q180,780 180,780Q180,780 180,780L780,780Q780,780 780,780Q780,780 780,780L780,178Q780,178 780,178Q780,178 780,178L180,178Q180,178 180,178Q180,178 180,178L180,390L120,390L120,178Q120,154 138,136Q156,118 180,118L780,118Q804,118 822,136Q840,154 840,178L840,780Q840,804 822,822Q804,840 780,840L180,840ZM413,673L368,628L486,510L120,510L120,450L486,450L368,332L413,287L606,480L413,673Z" />
 </vector>

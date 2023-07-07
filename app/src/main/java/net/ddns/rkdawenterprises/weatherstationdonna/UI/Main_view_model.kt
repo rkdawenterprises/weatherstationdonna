@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2019-2023 RKDAW Enterprises and Ralph Williamson.
+ *       email: rkdawenterprises@gmail.com
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 @file:Suppress("ClassName",
                "FunctionName",
                "RedundantSemicolon",
@@ -42,9 +58,12 @@ import net.ddns.rkdawenterprises.rkdawe_api_common.RKDAWE_API
 import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
 import net.ddns.rkdawenterprises.weatherstationdonna.Main_activity
 import net.ddns.rkdawenterprises.weatherstationdonna.R
-import net.ddns.rkdawenterprises.weatherstationdonna.davis_website.Davis_API
+import net.ddns.rkdawenterprises.davis_website.Davis_API
 import java.util.concurrent.atomic.AtomicInteger
 
+/**
+ * Provides a combined live data from three different servers.
+ */
 class Main_view_model(context: Main_activity): ViewModel()
 {
     class Main_view_model_factory(private val context: Main_activity): ViewModelProvider.Factory
@@ -92,8 +111,8 @@ class Main_view_model(context: Main_activity): ViewModel()
                 }
                 catch(exception: JsonSyntaxException)
                 {
-                    Log.d(LOG_TAG, "Bad data format for Weather_data: $exception")
-                    Log.d(LOG_TAG, ">>>$string_JSON<<<")
+//                    Log.d(LOG_TAG, "Bad data format for Weather_data: $exception")
+//                    Log.d(LOG_TAG, ">>>$string_JSON<<<")
                 }
 
                 return instance
@@ -114,11 +133,13 @@ class Main_view_model(context: Main_activity): ViewModel()
         var m_page_davis: Weather_page? = null
             private set
 
+        @Suppress("unused",
+                  "MemberVisibilityCanBePrivate")
         fun set_data_RKDAWE(status: String?, data: String?): Boolean
         {
             if(status == "success")
             {
-                Log.d(LOG_TAG, "Got RKDAWE data...")
+//                Log.d(LOG_TAG, "Got RKDAWE data...")
                 val response = Get_weather_station_data_GET_response.deserialize_from_JSON(data);
                 if((response != null) && (response.success == "true"))
                 {
@@ -130,11 +151,13 @@ class Main_view_model(context: Main_activity): ViewModel()
             return true;
         }
 
+        @Suppress("unused",
+                  "MemberVisibilityCanBePrivate")
         fun set_data_davis(status: String?, data: String?): Boolean
         {
             if(status == "success")
             {
-                Log.d(LOG_TAG, "Got davis data...")
+//                Log.d(LOG_TAG, "Got davis data...")
                 val response = net.ddns.rkdawenterprises.davis_website.Weather_data.deserialize_from_JSON(data);
                 if(response != null)
                 {
@@ -146,11 +169,13 @@ class Main_view_model(context: Main_activity): ViewModel()
             return true;
         }
 
+        @Suppress("unused",
+                  "MemberVisibilityCanBePrivate")
         fun set_page_davis(status: String?, data: String?): Boolean
         {
             if(status == "success")
             {
-                Log.d(LOG_TAG, "Got davis page...")
+//                Log.d(LOG_TAG, "Got davis page...")
                 val response = Weather_page.deserialize_from_JSON(data);
                 if(response != null)
                 {
@@ -212,12 +237,15 @@ class Main_view_model(context: Main_activity): ViewModel()
     }
 
     private val m_first_response = MutableLiveData<Array<String>>();
+    @Suppress("unused")
     val first_response: LiveData<Array<String>> get() = m_first_response;
 
     private val m_second_response = MutableLiveData<Array<String>>();
+    @Suppress("unused")
     val second_response: LiveData<Array<String>> get() = m_second_response;
 
     private val m_third_response = MutableLiveData<Array<String>>();
+    @Suppress("unused")
     val third_response: LiveData<Array<String>> get() = m_third_response;
 
     private val m_combined_response = MutableLiveData<Data_storage>();
@@ -228,7 +256,7 @@ class Main_view_model(context: Main_activity): ViewModel()
 
     fun refresh(stored_data: Data_storage)
     {
-        Log.d(LOG_TAG, "Using stored data...")
+//        Log.d(LOG_TAG, "Using stored data...")
         m_combined_response.value = stored_data;
     }
 
@@ -355,6 +383,7 @@ class Main_view_model(context: Main_activity): ViewModel()
         }
     }
 
+    @Suppress("unused")
     fun is_system_in_night_mode(context: Context): Boolean
     {
         return User_settings.is_system_in_night_mode(context);

@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2019-2023 RKDAW Enterprises and Ralph Williamson.
+ *       email: rkdawenterprises@gmail.com
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 @file:Suppress("ClassName",
                "FunctionName",
                "RedundantSemicolon",
@@ -5,7 +21,7 @@
                "LocalVariableName",
                "PropertyName")
 
-package net.ddns.rkdawenterprises.weatherstationdonna.davis_website
+package net.ddns.rkdawenterprises.davis_website
 
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
@@ -27,7 +43,7 @@ interface Davis_API_service
     suspend fun get_weather_station_page(): String
 }
 
-public object Davis_API
+object Davis_API
 {
     val m_davis_API_service: Davis_API_service by lazy {
         s_retrofit.create(Davis_API_service::class.java)

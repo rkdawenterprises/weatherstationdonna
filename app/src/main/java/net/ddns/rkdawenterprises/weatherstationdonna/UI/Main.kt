@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2019-2023 RKDAW Enterprises and Ralph Williamson.
+ *       email: rkdawenterprises@gmail.com
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 @file:Suppress("ClassName",
                "FunctionName",
                "RedundantSemicolon",
@@ -20,11 +36,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -33,14 +47,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import net.ddns.rkdawenterprises.davis_website.Weather_page
-import net.ddns.rkdawenterprises.rkdawe_api_common.Utilities.convert_time_UTC_to_local
-import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
 import net.ddns.rkdawenterprises.weatherstationdonna.Main_activity
 import net.ddns.rkdawenterprises.weatherstationdonna.R
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_theme
@@ -63,128 +72,70 @@ fun Main(main_activity: Main_activity,
                                                       { main_view_model.refresh(main_activity) })
 
     Main_theme(main_activity,
-               is_night_mode.value) {
-        val data_storage: Main_view_model.Data_storage? = weather_data.value;
-        if(data_storage != null)
+               is_night_mode.value)
+    {
+        Surface(modifier = Modifier)
         {
-            Box(modifier = Modifier
-                .padding(5.dp)
-                .pullRefresh(pull_refresh_state)
-                .clickable { main_activity.toggle() })
+            val data_storage: Main_view_model.Data_storage? = weather_data.value;
+            if(data_storage != null)
             {
-                val weather_data_RKDAWE = data_storage.m_data_RKDAWE;
-                val weather_data_davis = data_storage.m_data_davis;
-                val weather_page = data_storage.m_page_davis;
-
-                if((weather_data_RKDAWE != null) || (weather_data_davis != null))
+                Box(modifier = Modifier.padding(5.dp).pullRefresh(pull_refresh_state).clickable { main_activity.toggle() })
                 {
-                    LazyColumn(modifier = Modifier.fillMaxSize(),
-                               verticalArrangement = Arrangement.spacedBy(10.dp))
+                    val weather_data_RKDAWE = data_storage.m_data_RKDAWE;
+                    val weather_data_davis = data_storage.m_data_davis;
+                    val weather_page = data_storage.m_page_davis;
+
+                    if((weather_data_RKDAWE != null) || (weather_data_davis != null))
                     {
-                        item()
-                        {
-                            Spacer(modifier = Modifier.height(20.dp));
-                        }
+                        LazyColumn(modifier = Modifier.fillMaxSize(),
+                                   verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            item()
+                            {
+                                Spacer(modifier = Modifier.height(20.dp));
+                            }
 
-                        item()
-                        {
-                            Header(weather_data_RKDAWE,
-                                   weather_data_davis,
-                                   weather_page);
-                        }
+                            item()
+                            {
+                                Header(weather_data_RKDAWE,
+                                       weather_data_davis,
+                                       weather_page);
+                            }
 
-                        item()
-                        {
-                            Temperatures(weather_data_RKDAWE,
-                                         weather_data_davis);
-                        }
+                            item()
+                            {
+                                Temperatures(weather_data_RKDAWE,
+                                             weather_data_davis);
+                            }
 
-                        item()
-                        {
-                            Divider(color = MaterialTheme.material_colors_extended.view_divider,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(4.dp))
-                        }
+                            item()
+                            {
+                                Divider(color = MaterialTheme.material_colors_extended.view_divider,
+                                        modifier = Modifier.fillMaxWidth().height(4.dp))
+                            }
 
-                        item()
-                        {
-                            Conditions(weather_data_RKDAWE,
-                                       weather_data_davis);
-                        }
+                            item()
+                            {
+                                Conditions(weather_data_RKDAWE,
+                                           weather_data_davis);
+                            }
 
-                        item()
-                        {
-                            Data_table(weather_data_RKDAWE);
-                        }
-
-                        item() {
-                            Text(text = "${weather_data.value?.m_data_RKDAWE?.serialize_to_JSON()}");
-                        }
-
-                        item() {
-                            Text(text = "${weather_data.value?.m_data_davis?.serialize_to_JSON()}");
-                        }
-
-                        item() {
-                            Text(text = "${weather_data.value?.m_page_davis?.serialize_to_JSON()}");
+                            item()
+                            {
+                                All_data(weather_data_RKDAWE);
+                            }
                         }
                     }
-                }
-                else
-                {
-                    Text(text = stringResource(id = R.string.could_not_download_server_data),
-                         style = Main_typography.h1);
-                }
+                    else
+                    {
+                        Text(text = stringResource(id = R.string.could_not_download_server_data),
+                             style = Main_typography.h1);
+                    }
 
-                PullRefreshIndicator(is_refreshing,
-                                     pull_refresh_state,
-                                     Modifier.align(Alignment.TopCenter));
+                    PullRefreshIndicator(is_refreshing,
+                                         pull_refresh_state,
+                                         Modifier.align(Alignment.TopCenter));
+                }
             }
         }
     }
-}
-
-@Composable
-fun Header(weather_data_RKDAWE: Weather_data?,
-           weather_data_davis: net.ddns.rkdawenterprises.davis_website.Weather_data?,
-           weather_page: Weather_page?)
-{
-    val system_name = if(weather_data_RKDAWE != null)
-    {
-        weather_data_RKDAWE.system_name;
-    }
-    else if(weather_page != null)
-    {
-        weather_page.systemName;
-    }
-    else
-    {
-        stringResource(id = R.string.system_name_default);
-    }
-
-    val as_of = if(weather_data_RKDAWE != null)
-    {
-        "${stringResource(id = R.string.conditions_as_of_colon)} ${
-            convert_time_UTC_to_local(weather_data_RKDAWE.time, "h:mm a EEEE, MMM d, yyyy")}"
-    }
-    else
-    {
-        "${stringResource(id = R.string.conditions_as_of_colon)} ${
-            convert_time_UTC_to_local(java.time.LocalDateTime.now().atZone(java.time.ZoneId.of("UTC")).toString(),
-                                      "h:mm a EEEE, MMM d, yyyy")}"
-    }
-
-    TextField(value = system_name,
-              modifier = Modifier.fillMaxWidth(),
-              colors = TextFieldDefaults.textFieldColors(backgroundColor = MaterialTheme.material_colors_extended.primaryVariant,
-                                                         disabledTextColor = MaterialTheme.material_colors_extended.onPrimary),
-              shape = RectangleShape,
-              singleLine = true,
-              onValueChange = {},
-              enabled = false,
-              textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center,
-                                                      fontFamily = Main_typography.h6.fontFamily,
-                                                      fontWeight = Main_typography.h6.fontWeight,
-                                                      fontSize = Main_typography.h6.fontSize))
 }

@@ -1,9 +1,26 @@
+<!--
+  ~ Copyright (c) 2019-2023 RKDAW Enterprises and Ralph Williamson.
+  ~       email: rkdawenterprises@gmail.com
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="48dp"
     android:height="48dp"
+    android:tint="?attr/colorControlNormal"
     android:viewportWidth="960"
     android:viewportHeight="960">
-  <path
-      android:fillColor="#FF000000"
-      android:pathData="M480,800Q347,800 253.5,706.5Q160,613 160,480Q160,347 253.5,253.5Q347,160 480,160Q565,160 629,194.5Q693,229 740,289L740,160L800,160L800,414L546,414L546,354L714,354Q676,294 617,257Q558,220 480,220Q371,220 295.5,295.5Q220,371 220,480Q220,589 295.5,664.5Q371,740 480,740Q563,740 632,692.5Q701,645 728,567L790,567Q761,672 675,736Q589,800 480,800Z"/>
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M480,800Q347,800 253.5,706.5Q160,613 160,480Q160,347 253.5,253.5Q347,160 480,160Q565,160 629,194.5Q693,229 740,289L740,160L800,160L800,414L546,414L546,354L714,354Q676,294 617,257Q558,220 480,220Q371,220 295.5,295.5Q220,371 220,480Q220,589 295.5,664.5Q371,740 480,740Q563,740 632,692.5Q701,645 728,567L790,567Q761,672 675,736Q589,800 480,800Z" />
 </vector>

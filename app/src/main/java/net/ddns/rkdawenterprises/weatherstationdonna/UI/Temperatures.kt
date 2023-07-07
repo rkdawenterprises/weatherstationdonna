@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2019-2023 RKDAW Enterprises and Ralph Williamson.
+ *       email: rkdawenterprises@gmail.com
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 @file:Suppress("ClassName",
                "FunctionName",
                "RedundantSemicolon",
@@ -16,45 +32,25 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import net.ddns.rkdawenterprises.davis_website.Weather_data.get_forecast_icon_uri_for_date
-import net.ddns.rkdawenterprises.davis_website.Weather_page
 import net.ddns.rkdawenterprises.rkdawe_api_common.Utilities.convert_time_UTC_to_local
 import net.ddns.rkdawenterprises.rkdawe_api_common.Utilities.convert_timestamp_to_local
 import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
-import net.ddns.rkdawenterprises.weatherstationdonna.Main_activity
 import net.ddns.rkdawenterprises.weatherstationdonna.R
-import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_theme
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_typography
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.material_colors_extended
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import kotlin.math.cos
-import kotlin.math.sin
 
 @Suppress("unused")
 private const val LOG_TAG = "Temperatures_composable";
@@ -63,8 +59,10 @@ private const val LOG_TAG = "Temperatures_composable";
 fun Temperatures(weather_data_RKDAWE: Weather_data?,
                  weather_data_davis: net.ddns.rkdawenterprises.davis_website.Weather_data?)
 {
-    ConstraintLayout() {
-        val (forecast_icon, current_temperature, vertical_divider, todays_temperature_high, todays_temperature_high_time, todays_temperature_low, todays_temperature_low_time) = createRefs();
+    ConstraintLayout()
+    {
+        val (forecast_icon, current_temperature, vertical_divider, todays_temperature_high,
+            todays_temperature_high_time, todays_temperature_low, todays_temperature_low_time) = createRefs();
 
         val timestamp: ZonedDateTime? = if(weather_data_RKDAWE != null)
         {
@@ -89,7 +87,8 @@ fun Temperatures(weather_data_RKDAWE: Weather_data?,
             AsyncImage(model = forecast_URI,
                        contentDescription = stringResource(id = R.string.dynamic_forecast_icon),
                        modifier = Modifier
-                           .constrainAs(forecast_icon) {
+                           .constrainAs(forecast_icon)
+                           {
                                top.linkTo(parent.top,
                                           margin = 5.dp)
                                start.linkTo(parent.start,
@@ -105,7 +104,8 @@ fun Temperatures(weather_data_RKDAWE: Weather_data?,
             Image(painterResource(R.drawable.sunny_48),
                   contentDescription = stringResource(id = R.string.dynamic_forecast_unavailable_icon),
                   modifier = Modifier
-                      .constrainAs(forecast_icon) {
+                      .constrainAs(forecast_icon)
+                      {
                           top.linkTo(parent.top,
                                      margin = 5.dp)
                           start.linkTo(parent.start,
@@ -131,7 +131,8 @@ fun Temperatures(weather_data_RKDAWE: Weather_data?,
         if(current_temperature_text != null)
         {
             Text(current_temperature_text,
-                 modifier = Modifier.constrainAs(current_temperature) {
+                 modifier = Modifier.constrainAs(current_temperature)
+                 {
                      top.linkTo(forecast_icon.top)
                      bottom.linkTo(forecast_icon.bottom)
                      start.linkTo(forecast_icon.end,
@@ -143,7 +144,8 @@ fun Temperatures(weather_data_RKDAWE: Weather_data?,
 
         Divider(color = MaterialTheme.material_colors_extended.view_divider,
                 modifier = Modifier
-                    .constrainAs(vertical_divider) {
+                    .constrainAs(vertical_divider)
+                    {
                         top.linkTo(forecast_icon.top)
                         bottom.linkTo(forecast_icon.bottom)
                         start.linkTo(current_temperature.end,
@@ -170,7 +172,8 @@ fun Temperatures(weather_data_RKDAWE: Weather_data?,
         if(todays_temperature_high_text != null)
         {
             Text(todays_temperature_high_text,
-                 modifier = Modifier.constrainAs(todays_temperature_high) {
+                 modifier = Modifier.constrainAs(todays_temperature_high)
+                 {
                      top.linkTo(vertical_divider.top)
                      bottom.linkTo(todays_temperature_low.top)
                      start.linkTo(vertical_divider.end,
@@ -190,14 +193,16 @@ fun Temperatures(weather_data_RKDAWE: Weather_data?,
             else if(weather_data_davis != null)
             {
                 "${stringResource(id = R.string.at)} ${convert_timestamp_to_local(weather_data_davis.hiTempDate,
-                                                                                  weather_data_davis.timeZoneId)}"
+                                                                           weather_data_davis.timeZoneId,
+                                                                           "h:mm a")}"
             }
             else null;
 
         if(todays_temperature_high_time_text != null)
         {
             Text(todays_temperature_high_time_text,
-                 modifier = Modifier.constrainAs(todays_temperature_high_time) {
+                 modifier = Modifier.constrainAs(todays_temperature_high_time)
+                 {
                      top.linkTo(todays_temperature_high.top)
                      bottom.linkTo(todays_temperature_high.bottom)
                      start.linkTo(todays_temperature_high.end,
@@ -224,7 +229,8 @@ fun Temperatures(weather_data_RKDAWE: Weather_data?,
         if(todays_temperature_low_text != null)
         {
             Text(todays_temperature_low_text,
-                 modifier = Modifier.constrainAs(todays_temperature_low) {
+                 modifier = Modifier.constrainAs(todays_temperature_low)
+                 {
                      top.linkTo(todays_temperature_high.bottom)
                      bottom.linkTo(vertical_divider.bottom)
                      start.linkTo(vertical_divider.end,
@@ -244,14 +250,16 @@ fun Temperatures(weather_data_RKDAWE: Weather_data?,
             else if(weather_data_davis != null)
             {
                 "${stringResource(id = R.string.at)} ${convert_timestamp_to_local(weather_data_davis.loTempDate,
-                                                                                  weather_data_davis.timeZoneId)}"
+                                                                           weather_data_davis.timeZoneId,
+                                                                           "h:mm a")}"
             }
             else null;
 
         if(todays_temperature_low_time_text != null)
         {
             Text(todays_temperature_low_time_text,
-                 modifier = Modifier.constrainAs(todays_temperature_low_time) {
+                 modifier = Modifier.constrainAs(todays_temperature_low_time)
+                 {
                      top.linkTo(todays_temperature_low.top)
                      bottom.linkTo(todays_temperature_low.bottom)
                      start.linkTo(todays_temperature_low.end,
