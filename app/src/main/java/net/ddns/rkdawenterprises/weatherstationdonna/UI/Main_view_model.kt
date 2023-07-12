@@ -28,7 +28,6 @@ import android.content.Context
 import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -651,5 +650,23 @@ class Main_view_model(context: Main_activity): ViewModel()
                 }
             }
         }
+    }
+
+    private val m_is_show_about_dialog = MutableStateFlow(false);
+    val is_show_about_dialog: StateFlow<Boolean> get() = m_is_show_about_dialog.asStateFlow();
+
+    fun show_about_dialog()
+    {
+        m_is_show_about_dialog.value = true;
+    }
+
+    fun about_dialog_ok()
+    {
+        m_is_show_about_dialog.value = false;
+    }
+
+    fun about_dialog_cancel()
+    {
+        m_is_show_about_dialog.value = false;
     }
 }

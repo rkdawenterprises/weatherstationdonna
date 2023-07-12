@@ -336,6 +336,12 @@ class Main_activity: AppCompatActivity()
             return true;
         }
 
+        if(item_ID == R.id.action_about)
+        {
+            m_main_view_model.show_about_dialog();
+            return true;
+        }
+
         return super.onOptionsItemSelected(item)
     }
 
