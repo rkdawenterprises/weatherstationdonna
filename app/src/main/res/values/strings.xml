@@ -84,8 +84,9 @@
     <string name="barometer_colon">Barometer:</string>
     <string name="barometer_trend">Trend:</string>
     <string name="all_data">All Data</string>
-    <string name="displays_weather_data_from_donna_s_davis_vantage_vue_station">Displays weather data from Donna\'s Davis Vantage Vue station.</string>
+    <string name="displays_weather_data_from_donna_s_davis_vantage_vue_station">Weather data from Donna\'s Davis Vantage Vue station.</string>
     <string name="copyright_2019_2023_rkdaw_enterprises_and_ralph_williamson">Copyright 2019-2023 RKDAW Enterprises and Ralph Williamson.</string>
-    <string name="licensed_under_the_apache_license_version_2_0_the_license">Licensed under the Apache License, Version 2.0 (the \"License\"); You may not use this software except in compliance with the License. You may obtain a copy of the License at\n     http://www.apache.org/licenses/LICENSE-2.0</string>
-    <string name="unless_required_by_applicable_law_or_agreed_to_in_writing">Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</string>
+    <string name="about_app_information_link"><![CDATA[Visit
+        <a href="https://rkdawenterprises.ddns.net/rkdaweapi/weather_station_donna_app_info">Weather Station Donna App Information at RKDAW Enterprises</a>
+        for More Information, Privacy Policy, and License.]]></string>
 </resources>

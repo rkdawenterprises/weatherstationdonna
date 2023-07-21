@@ -28,25 +28,21 @@ package net.ddns.rkdawenterprises.weatherstationdonna.UI
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -54,7 +50,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import net.ddns.rkdawenterprises.weatherstationdonna.BuildConfig
 import net.ddns.rkdawenterprises.weatherstationdonna.Main_activity
 import net.ddns.rkdawenterprises.weatherstationdonna.R
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_theme
@@ -151,32 +146,4 @@ fun Main(main_activity: Main_activity,
             }
         }
     }
-}
-
-@Composable
-fun About_dialog(on_ok: () -> Unit,
-                 on_cancel: () -> Unit)
-{
-    val version_name = BuildConfig.VERSION_NAME;
-
-    AlertDialog(onDismissRequest = on_cancel,
-        confirmButton =
-        {
-            TextButton(onClick = on_ok)
-            { Text(text =  stringResource(id = R.string.ok)) }
-        },
-        title = { Text(text = "${stringResource(id = R.string.app_name)} v$version_name") },
-        text =
-            {
-                Column()
-                {
-                    Text(text = stringResource(R.string.displays_weather_data_from_donna_s_davis_vantage_vue_station))
-                    Spacer(modifier = Modifier.height(10.dp));
-                    Text(text = stringResource(R.string.copyright_2019_2023_rkdaw_enterprises_and_ralph_williamson))
-                    Spacer(modifier = Modifier.height(10.dp));
-                    Text(text = stringResource(R.string.licensed_under_the_apache_license_version_2_0_the_license))
-                    Spacer(modifier = Modifier.height(10.dp));
-                    Text(text = stringResource(R.string.unless_required_by_applicable_law_or_agreed_to_in_writing))
-                }
-            })
 }
