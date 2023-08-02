@@ -73,11 +73,13 @@ class Main_activity: AppCompatActivity()
 
     private val m_show_hide_handler = Handler(Looper.myLooper()!!);
 
-    private val m_main_view_model: Main_view_model by viewModels { Main_view_model.Main_view_model_factory(this) };
+    private val m_main_view_model: Main_view_model by viewModels();
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState);
+
+        m_main_view_model.load_night_mode_selection(this);
 
         m_binding = ActivityMainBinding.inflate(layoutInflater);
         setContentView(m_binding.root);
@@ -87,7 +89,7 @@ class Main_activity: AppCompatActivity()
         supportActionBar?.setDisplayHomeAsUpEnabled(true);
 
         val compose_view = m_binding.contentView;
-        compose_view.setContent { Main(this, m_main_view_model); }
+        compose_view.setContent { Main(); }
         compose_view.setOnClickListener { toggle(); }
 
         window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
@@ -117,6 +119,19 @@ class Main_activity: AppCompatActivity()
                 }
             }
         }
+
+        m_main_view_model.snackbar_message.observe(this)
+        { value ->
+            if(value.size == 1)
+            {
+                logging_ok_snackbar(value[0])
+            }
+            else if(value.size == 2)
+            {
+                logging_ok_snackbar(value[0],
+                                    value[1])
+            }
+        }
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?)
@@ -125,20 +140,6 @@ class Main_activity: AppCompatActivity()
 
         delayed_hide(INITIAL_HIDE_DELAY);
     }
-
-//    private fun display_fetch_issue()
-//    {
-//        if(m_binding.swipeToRefresh.isRefreshing)
-//        {
-//            m_binding.swipeToRefresh.isRefreshing = false;
-//        }
-//
-//        val message = resources.getString(R.string.unable_to_get_weather_data);
-//        Log.d(LOG_TAG, "display_fetch_issue: $message");
-//        Snackbar.make(m_binding.root,
-//                      message,
-//                      Snackbar.LENGTH_LONG).setAction(R.string.ok) {}.show();
-//    }
 
     private val hide_toolbars_runnable = Runnable { hide_toolbars(); }
 
@@ -272,7 +273,7 @@ class Main_activity: AppCompatActivity()
             { is_ok_to_fetch_data ->
                 if(is_ok_to_fetch_data)
                 {
-                    m_main_view_model.refresh(this);
+                    m_main_view_model.refresh();
                 }
                 else
                 {
@@ -345,9 +346,9 @@ class Main_activity: AppCompatActivity()
         return super.onOptionsItemSelected(item)
     }
 
-    fun logging_ok_snackbar(short_message: String, long_message: String = "")
+    private fun logging_ok_snackbar(short_message: String, long_message: String = "")
     {
-//        Log.d(LOG_TAG, "$short_message: $long_message");
+        Log.d(LOG_TAG, "$short_message: $long_message");
         Snackbar.make(m_binding.root,
                       short_message,
                       Snackbar.LENGTH_LONG).setAction(R.string.ok) {}.show();
@@ -389,7 +390,7 @@ class Main_activity: AppCompatActivity()
         { is_ok_to_fetch_data ->
             if(is_ok_to_fetch_data)
             {
-                m_main_view_model.refresh(this);
+                m_main_view_model.refresh();
             }
             else
             {

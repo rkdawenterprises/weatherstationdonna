@@ -47,9 +47,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import net.ddns.rkdawenterprises.weatherstationdonna.Main_activity
 import net.ddns.rkdawenterprises.weatherstationdonna.R
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_theme
@@ -61,19 +63,16 @@ private const val LOG_TAG = "Main_composable";
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Main(main_activity: Main_activity,
-         main_view_model: Main_view_model)
+fun Main(main_view_model: Main_view_model = viewModel())
 {
-    val is_night_mode = main_view_model.is_application_in_night_mode(main_activity).collectAsStateWithLifecycle(false,
-                                                                                                                main_activity);
+    val context = LocalContext.current;
+    val is_night_mode = main_view_model.is_application_in_night_mode(context).collectAsStateWithLifecycle(false);
     val weather_data = main_view_model.combined_response.observeAsState();
-    val is_refreshing: Boolean by main_view_model.is_refreshing.collectAsStateWithLifecycle(false,
-                                                                                            main_activity);
+    val is_refreshing: Boolean by main_view_model.is_refreshing.collectAsStateWithLifecycle(false);
     val pull_refresh_state = rememberPullRefreshState(is_refreshing,
-                                                      { main_view_model.refresh(main_activity) })
-    val is_show_about_dialog: Boolean by main_view_model.is_show_about_dialog.collectAsStateWithLifecycle(false,
-                                                                                                          main_activity);
-    Main_theme(main_activity,
+                                                      { main_view_model.refresh() })
+    val is_show_about_dialog: Boolean by main_view_model.is_show_about_dialog.collectAsStateWithLifecycle(false);
+    Main_theme(context,
                is_night_mode.value)
     {
         Surface(modifier = Modifier)
@@ -81,7 +80,7 @@ fun Main(main_activity: Main_activity,
             val data_storage: Main_view_model.Data_storage? = weather_data.value;
             if(data_storage != null)
             {
-                Box(modifier = Modifier.padding(5.dp).pullRefresh(pull_refresh_state).clickable { main_activity.toggle() })
+                Box(modifier = Modifier.padding(5.dp).pullRefresh(pull_refresh_state).clickable { (context as Main_activity).toggle() })
                 {
                     val weather_data_RKDAWE = data_storage.m_data_RKDAWE;
                     val weather_data_davis = data_storage.m_data_davis;
@@ -136,7 +135,7 @@ fun Main(main_activity: Main_activity,
                     else
                     {
                         Text(text = stringResource(id = R.string.could_not_download_server_data),
-                             style = Main_typography.h1);
+                             style = Main_typography.body1);
                     }
 
                     PullRefreshIndicator(is_refreshing,

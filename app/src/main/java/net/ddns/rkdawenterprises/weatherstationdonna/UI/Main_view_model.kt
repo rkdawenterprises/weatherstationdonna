@@ -24,10 +24,12 @@
 
 package net.ddns.rkdawenterprises.weatherstationdonna.UI
 
+import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -36,10 +38,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -55,7 +56,6 @@ import net.ddns.rkdawenterprises.davis_website.Weather_page
 import net.ddns.rkdawenterprises.rkdawe_api_common.Get_weather_station_data_GET_response
 import net.ddns.rkdawenterprises.rkdawe_api_common.RKDAWE_API
 import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
-import net.ddns.rkdawenterprises.weatherstationdonna.Main_activity
 import net.ddns.rkdawenterprises.weatherstationdonna.R
 import net.ddns.rkdawenterprises.davis_website.Davis_API
 import java.util.concurrent.atomic.AtomicInteger
@@ -63,17 +63,8 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * Provides a combined live data from three different servers.
  */
-class Main_view_model(context: Main_activity): ViewModel()
+class Main_view_model(application: Application): AndroidViewModel(application)
 {
-    class Main_view_model_factory(private val context: Main_activity): ViewModelProvider.Factory
-    {
-        override fun <T: ViewModel> create(modelClass: Class<T>): T
-        {
-            @Suppress("UNCHECKED_CAST")
-            return Main_view_model(context) as T
-        }
-    }
-
     /**
      * Last "successful" fetched weather data. Does not store the failed fetches.
      */
@@ -110,8 +101,8 @@ class Main_view_model(context: Main_activity): ViewModel()
                 }
                 catch(exception: JsonSyntaxException)
                 {
-//                    Log.d(LOG_TAG, "Bad data format for Weather_data: $exception")
-//                    Log.d(LOG_TAG, ">>>$string_JSON<<<")
+                    Log.d(LOG_TAG, "Bad data format for Weather_data: $exception")
+                    Log.d(LOG_TAG, ">>>$string_JSON<<<")
                 }
 
                 return instance
@@ -210,14 +201,6 @@ class Main_view_model(context: Main_activity): ViewModel()
         private const val STATE_ALL = STATE_STARTED or STATE_FIRST or STATE_SECOND or STATE_THIRD;
     }
 
-    init
-    {
-        load_night_mode_selection(context)
-        { night_mode_selection->
-            update_night_mode(context, night_mode_selection);
-        }
-    }
-
     private val m_state: AtomicInteger = AtomicInteger(STATE_IDLE);
 
     private fun get_state(): Int
@@ -253,14 +236,20 @@ class Main_view_model(context: Main_activity): ViewModel()
     private val m_is_refreshing = MutableStateFlow(false);
     val is_refreshing: StateFlow<Boolean> get() = m_is_refreshing.asStateFlow();
 
+    private val m_snackbar_message = MutableLiveData<Array<String>>();
+    @Suppress("unused")
+    val snackbar_message: LiveData<Array<String>> get() = m_snackbar_message;
+
     fun refresh(stored_data: Data_storage)
     {
 //        Log.d(LOG_TAG, "Using stored data...")
         m_combined_response.value = stored_data;
     }
 
-    fun refresh(context: Main_activity)
+    fun refresh()
     {
+        val application_context = getApplication<Application>().applicationContext;
+        
         if(get_state() == STATE_IDLE)
         {
             set_state(STATE_STARTED);
@@ -274,8 +263,8 @@ class Main_view_model(context: Main_activity): ViewModel()
                 }
                 catch(exception: Exception)
                 {
-                    context.logging_ok_snackbar(context.resources.getString(R.string.unable_to_get_weather_data),
-                                                "Failure fetching RKDAWE data: ${exception.message}");
+                    m_snackbar_message.value = arrayOf(application_context.resources.getString(R.string.unable_to_get_weather_data),
+                                                       "Failure fetching RKDAWE data: ${exception.message}");
                     arrayOf("failure", "${exception.message}");
                 }
 
@@ -287,8 +276,8 @@ class Main_view_model(context: Main_activity): ViewModel()
                     }
                     catch(exception: Exception)
                     {
-                        context.logging_ok_snackbar(context.resources.getString(R.string.unable_to_get_weather_data),
-                                                    "Failure fetching RKDAWE data: ${exception.message}");
+                        m_snackbar_message.value = arrayOf(application_context.resources.getString(R.string.unable_to_get_weather_data),
+                                                           "Failure fetching RKDAWE data: ${exception.message}");
                         arrayOf("failure", "${exception.message}");
                     }
                 }
@@ -311,8 +300,8 @@ class Main_view_model(context: Main_activity): ViewModel()
                 }
                 catch(exception: Exception)
                 {
-                    context.logging_ok_snackbar(context.resources.getString(R.string.unable_to_get_weather_data),
-                                                "Failure fetching davis data: ${exception.message}");
+                    m_snackbar_message.value = arrayOf(application_context.resources.getString(R.string.unable_to_get_weather_data),
+                                                       "Failure fetching davis data: ${exception.message}");
                     arrayOf("failure", "${exception.message}");
                 }
 
@@ -336,8 +325,8 @@ class Main_view_model(context: Main_activity): ViewModel()
                 }
                 catch(exception: Exception)
                 {
-                    context.logging_ok_snackbar(context.resources.getString(R.string.unable_to_get_weather_data),
-                                                "Failure fetching davis page: ${exception.message}");
+                    m_snackbar_message.value = arrayOf(application_context.resources.getString(R.string.unable_to_get_weather_data),
+                                                       "Failure fetching davis page: ${exception.message}");
                     arrayOf("failure", "${exception.message}");
                 }
 
@@ -386,6 +375,14 @@ class Main_view_model(context: Main_activity): ViewModel()
     fun is_system_in_night_mode(context: Context): Boolean
     {
         return User_settings.is_system_in_night_mode(context);
+    }
+
+    fun load_night_mode_selection(context: Context)
+    {
+        viewModelScope.launch()
+        {
+            update_night_mode(context, User_settings.get_night_mode_selection(context).first())
+        }
     }
 
     fun load_night_mode_selection(context: Context,
