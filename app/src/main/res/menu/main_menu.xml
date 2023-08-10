@@ -30,6 +30,12 @@
         android:icon="@drawable/dark_mode_48"
         app:showAsAction="never" />
 
+    <item android:id="@+id/action_set_forcast_location"
+        android:title="@string/action_set_forcast_location"
+        android:titleCondensed="@string/action_set_forcast_location_condensed"
+        android:icon="@drawable/map_48"
+        app:showAsAction="never" />
+
     <item android:id="@+id/action_download_over_wifi_only"
         android:title="@string/action_download_over_wifi_only"
         android:titleCondensed="@string/action_download_over_wifi_only_condensed"

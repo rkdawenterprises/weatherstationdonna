@@ -21,6 +21,8 @@
     <string name="action_download_over_wifi_only_condensed">Download WiFi Only</string>
     <string name="action_set_night_mode_theme">Set Dark Mode Theme</string>
     <string name="action_set_night_mode_theme_condensed">Dark Mode</string>
+    <string name="action_set_forcast_location">Set Forcast Location</string>
+    <string name="action_set_forcast_location_condensed">Location</string>
     <string name="action_refresh_weather_data">Refresh Weather Data</string>
     <string name="action_refresh_weather_data_condensed">Refresh</string>
     <string name="action_auto_hide_toolbars">Auto Hide Toolbars</string>
@@ -44,6 +46,9 @@
     <!-- Default dark mode setting. -->
     <integer name="night_mode_selection_default">0</integer>
 
+    <!--    Default forecast location-->
+    <string name="forecast_location_setting_default">34.571712, -92.999596</string>
+
     <string name="system_name_default">Weather Station Donna @ Hot Springs, AR</string>
     <string name="conditions_as_of_colon">Conditions as of: </string>
     <string name="exiting">Exiting</string>
@@ -51,7 +56,12 @@
     <string name="cancel">Cancel</string>
     <string name="latest_weather_data">Latest Weather Data</string>
     <string name="unable_to_get_weather_data">Unable to get weather data</string>
+    <string name="unable_to_get_forcast_data">Unable to get forcast data</string>
     <string name="select_night_mode">"Select Dark Mode"</string>
+    <string name="set_forecast_location">"Set Forecast Location"</string>
+    <string name="enter_forecast_location">"Enter Forecast Location \&lt;lat,long\&gt;"</string>
+    <string name="use_current">"Use Current"</string>
+    <string name="use_default">"Use Default"</string>
     <string name="not_allowed_to_get_weather_data_unless_over_wifi">Not allowed to get weather data unless over WIFI, check settings…</string>
     <string name="dynamic_forecast_icon">Dynamic Forecast Icon</string>
     <string name="dynamic_forecast_unavailable_icon">Dynamic Forecast Unavailable Icon</string>
@@ -89,4 +99,8 @@
     <string name="about_app_information_link"><![CDATA[Visit
         <a href="https://rkdawenterprises.ddns.net/rkdaweapi/weather_station_donna_app_info">Weather Station Donna App Information at RKDAW Enterprises</a>
         for More Information, Privacy Policy, and License.]]></string>
+    <string name="getting_location">getting location...</string>
+    <string name="location_permissions">Location Permissions</string>
+    <string name="for_app_to_use_current_location">In order for this app to use your current location, you must enable location permissions. Cancel if you do not want to enable location permissions, or \'OK\' to open the setting dialog.</string>
+    <string name="system_did_not_give_a_location">System didn\'t give a location...</string>
 </resources>

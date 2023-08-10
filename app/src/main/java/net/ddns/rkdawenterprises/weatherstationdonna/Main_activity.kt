@@ -25,6 +25,7 @@
 package net.ddns.rkdawenterprises.weatherstationdonna
 
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -35,12 +36,18 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.menu.MenuBuilder
+import androidx.core.app.ActivityCompat
 import androidx.core.view.WindowCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority.PRIORITY_BALANCED_POWER_ACCURACY
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.Main
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.Main_view_model
 import net.ddns.rkdawenterprises.weatherstationdonna.databinding.ActivityMainBinding
+import net.ddns.rkdawenterprises.weatherstationdonna.databinding.ForecastLocationBinding
 import java.util.*
 
 /**
@@ -61,6 +68,8 @@ const val INITIAL_HIDE_DELAY = 500;
  */
 const val AUTO_HIDE_TOOLBARS_DELAY = 3500;
 
+const val ACCESS_LOCATION_PERMISSION_REQUEST_CODE: Int = 8026
+
 class Main_activity: AppCompatActivity()
 {
     companion object
@@ -69,7 +78,7 @@ class Main_activity: AppCompatActivity()
         private const val LOG_TAG = "Main_activity";
     }
 
-    private lateinit var m_binding: ActivityMainBinding;
+    private lateinit var m_main_binding: ActivityMainBinding;
 
     private val m_show_hide_handler = Handler(Looper.myLooper()!!);
 
@@ -81,14 +90,14 @@ class Main_activity: AppCompatActivity()
 
         m_main_view_model.load_night_mode_selection(this);
 
-        m_binding = ActivityMainBinding.inflate(layoutInflater);
-        setContentView(m_binding.root);
+        m_main_binding = ActivityMainBinding.inflate(layoutInflater);
+        setContentView(m_main_binding.root);
 
-        setSupportActionBar(m_binding.toolbar);
+        setSupportActionBar(m_main_binding.toolbar);
         supportActionBar?.setHomeButtonEnabled(true);
         supportActionBar?.setDisplayHomeAsUpEnabled(true);
 
-        val compose_view = m_binding.contentView;
+        val compose_view = m_main_binding.contentView;
         compose_view.setContent { Main(); }
         compose_view.setOnClickListener { toggle(); }
 
@@ -207,12 +216,12 @@ class Main_activity: AppCompatActivity()
     {
         if(Build.VERSION.SDK_INT >= 30)
         {
-            m_binding.mainView.windowInsetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+            m_main_binding.mainView.windowInsetsController?.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
         }
         else
         {
             @Suppress("DEPRECATION")
-            m_binding.mainView.systemUiVisibility =
+            m_main_binding.mainView.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LOW_PROFILE or
                         View.SYSTEM_UI_FLAG_FULLSCREEN or
                         View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
@@ -226,12 +235,12 @@ class Main_activity: AppCompatActivity()
     {
         if(Build.VERSION.SDK_INT >= 30)
         {
-            m_binding.mainView.windowInsetsController?.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+            m_main_binding.mainView.windowInsetsController?.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
         }
         else
         {
             @Suppress("DEPRECATION")
-            m_binding.mainView.systemUiVisibility =
+            m_main_binding.mainView.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
                         View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         }
@@ -277,7 +286,7 @@ class Main_activity: AppCompatActivity()
                 }
                 else
                 {
-                    logging_ok_snackbar(resources.getString(R.string.not_allowed_to_get_weather_data_unless_over_wifi));
+                    logging_ok_snackbar(getString(R.string.not_allowed_to_get_weather_data_unless_over_wifi));
                 }
             }
 
@@ -293,12 +302,85 @@ class Main_activity: AppCompatActivity()
                 MaterialAlertDialogBuilder(this)
                         .setTitle(R.string.select_night_mode)
                         .setSingleChoiceItems(selections, night_mode_selection, null)
-                        .setPositiveButton(resources.getString(R.string.ok)) { dialog, _->
+                        .setPositiveButton(getString(R.string.ok)) { dialog, _->
                             val selection = (dialog as AlertDialog).listView.checkedItemPosition;
                             m_main_view_model.store_night_mode_selection(this, selection);
                         }
-                        .setNegativeButton(resources.getString(R.string.cancel)) { dialog, _-> dialog.cancel(); }
+                        .setNegativeButton(getString(R.string.cancel)) { dialog, _-> dialog.cancel(); }
                         .show();
+            }
+
+            return true;
+        }
+
+        if(item_ID == R.id.action_set_forcast_location)
+        {
+            m_main_view_model.load_forecast_location_setting(this)
+            { forecast_location_setting ->
+                val binding: ForecastLocationBinding = ForecastLocationBinding.inflate(layoutInflater);
+                val text_input = binding.forecastLocationEditText;
+                val use_current_location_button = binding.useCurrentLocationButton;
+                val use_default_location_button = binding.useDefaultLocationButton;
+                val cancellation_source = CancellationTokenSource()
+                val fused_location_provider_client: FusedLocationProviderClient =
+                    LocationServices.getFusedLocationProviderClient(this);
+
+                text_input.setText(forecast_location_setting);
+
+                val alert_dialog: AlertDialog =
+                MaterialAlertDialogBuilder(this)
+                    .setView(binding.root)
+                    .setTitle(R.string.set_forecast_location)
+                    .setPositiveButton(getString(R.string.ok)) { dialog, _ ->
+                        m_main_view_model.store_forecast_location_setting(this, text_input.text.toString());
+                        cancellation_source.cancel();
+                    }
+                    .setNegativeButton(getString(R.string.cancel)) { dialog, _->
+                        cancellation_source.cancel();
+                        dialog.cancel(); }
+                    .show();
+
+                use_current_location_button.setOnClickListener()
+                {
+                    val access_coarse_location_permission =
+                        ActivityCompat.checkSelfPermission(this,
+                                                           android.Manifest.permission.ACCESS_COARSE_LOCATION);
+                    val access_fine_location_permission =
+                        ActivityCompat.checkSelfPermission(this,
+                                                           android.Manifest.permission.ACCESS_FINE_LOCATION);
+                    val is_have_location_permission = !(access_coarse_location_permission != PackageManager.PERMISSION_GRANTED
+                            || access_fine_location_permission != PackageManager.PERMISSION_GRANTED);
+                    if(is_have_location_permission)
+                    {
+                        text_input.setText(getString(R.string.getting_location));
+                        fused_location_provider_client.getCurrentLocation(PRIORITY_BALANCED_POWER_ACCURACY,
+                                                                          cancellation_source.token)
+                            .addOnSuccessListener()
+                            {
+                                if (it == null)
+                                {
+                                    text_input.setText(getString(R.string.system_did_not_give_a_location));
+                                }
+                                else
+                                {
+                                    val latitude = it.latitude;
+                                    val longitude = it.longitude;
+                                    text_input.setText("$latitude,$longitude");
+                                    Log.d(LOG_TAG, "$latitude,$longitude");
+                                }
+                            }
+                    }
+                    else
+                    {
+                        alert_dialog.cancel();
+                        get_location_permissions_from_user();
+                    }
+                }
+
+                use_default_location_button.setOnClickListener()
+                {
+                    text_input.setText(getString(R.string.forecast_location_setting_default));
+                }
             }
 
             return true;
@@ -325,8 +407,8 @@ class Main_activity: AppCompatActivity()
         if((item_ID == android.R.id.home) || (item_ID == R.id.action_exit))
         {
             logging_ok_snackbar(String.format("%s %s",
-                                        resources.getString(R.string.exiting),
-                                        resources.getString(R.string.app_name)));
+                                        getString(R.string.exiting),
+                                        getString(R.string.app_name)));
 
             // Allow menu and toast time to close.
             Handler(Looper.getMainLooper()).postDelayed({
@@ -346,10 +428,26 @@ class Main_activity: AppCompatActivity()
         return super.onOptionsItemSelected(item)
     }
 
+    private fun get_location_permissions_from_user()
+    {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.location_permissions))
+            .setMessage(getString(R.string.for_app_to_use_current_location))
+            .setPositiveButton(getString(R.string.ok))
+            { _, _ ->
+                ActivityCompat.requestPermissions(this,
+                                                  arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION,
+                                                          android.Manifest.permission.ACCESS_COARSE_LOCATION),
+                                                  ACCESS_LOCATION_PERMISSION_REQUEST_CODE);
+            }
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _-> dialog.cancel(); }
+            .show();
+    }
+    
     private fun logging_ok_snackbar(short_message: String, long_message: String = "")
     {
         Log.d(LOG_TAG, "$short_message: $long_message");
-        Snackbar.make(m_binding.root,
+        Snackbar.make(m_main_binding.root,
                       short_message,
                       Snackbar.LENGTH_LONG).setAction(R.string.ok) {}.show();
     }
@@ -394,7 +492,7 @@ class Main_activity: AppCompatActivity()
             }
             else
             {
-                logging_ok_snackbar(resources.getString(R.string.not_allowed_to_get_weather_data_unless_over_wifi));
+                logging_ok_snackbar(getString(R.string.not_allowed_to_get_weather_data_unless_over_wifi));
             }
         }
     }

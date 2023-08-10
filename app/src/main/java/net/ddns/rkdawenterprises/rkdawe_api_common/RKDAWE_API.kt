@@ -46,4 +46,3 @@ object RKDAWE_API
         s_retrofit.create(RKDAWE_API_service::class.java)
     }
 }
-
