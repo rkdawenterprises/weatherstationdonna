@@ -85,6 +85,7 @@ fun Main(main_view_model: Main_view_model = viewModel())
                     val weather_data_RKDAWE = data_storage.m_data_RKDAWE;
                     val weather_data_davis = data_storage.m_data_davis;
                     val weather_page = data_storage.m_page_davis;
+                    val weather_forecast = data_storage.m_data_weather_gov;
 
                     if(is_show_about_dialog)
                     {
@@ -92,7 +93,8 @@ fun Main(main_view_model: Main_view_model = viewModel())
                                      on_cancel = main_view_model::about_dialog_cancel);
                     }
                     
-                    if((weather_data_RKDAWE != null) || (weather_data_davis != null))
+                    if(((weather_data_RKDAWE != null) || (weather_data_davis != null))
+                        && (weather_forecast != null))
                     {
                         LazyColumn(modifier = Modifier.fillMaxSize(),
                                    verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -124,6 +126,17 @@ fun Main(main_view_model: Main_view_model = viewModel())
                             {
                                 Conditions(weather_data_RKDAWE,
                                            weather_data_davis);
+                            }
+
+                            item()
+                            {
+                                Divider(color = MaterialTheme.material_colors_extended.view_divider,
+                                        modifier = Modifier.fillMaxWidth().height(4.dp))
+                            }
+
+                            item()
+                            {
+                                Forecast(weather_forecast);
                             }
 
                             item()

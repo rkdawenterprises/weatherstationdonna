@@ -103,4 +103,5 @@
     <string name="location_permissions">Location Permissions</string>
     <string name="for_app_to_use_current_location">In order for this app to use your current location, you must enable location permissions. Cancel if you do not want to enable location permissions, or \'OK\' to open the setting dialog.</string>
     <string name="system_did_not_give_a_location">System didn\'t give a location...</string>
+    <string name="forecast">Forecast</string>
 </resources>

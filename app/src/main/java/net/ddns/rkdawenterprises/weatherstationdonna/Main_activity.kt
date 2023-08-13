@@ -446,7 +446,15 @@ class Main_activity: AppCompatActivity()
     
     private fun logging_ok_snackbar(short_message: String, long_message: String = "")
     {
-        Log.d(LOG_TAG, "$short_message: $long_message");
+        if(long_message.isNotEmpty())
+        {
+            Log.d(LOG_TAG, "$short_message: $long_message")
+        }
+        else
+        {
+            Log.d(LOG_TAG, "$short_message")
+        }
+
         Snackbar.make(m_main_binding.root,
                       short_message,
                       Snackbar.LENGTH_LONG).setAction(R.string.ok) {}.show();

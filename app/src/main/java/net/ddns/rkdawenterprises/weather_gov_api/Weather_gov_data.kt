@@ -30,6 +30,8 @@ import com.google.gson.JsonSyntaxException
 @SuppressWarnings("unused")
 class Weather_gov_data
 {
+    // TODO: Flesh out Weather_gov_data with what is needed in the UI.
+    
     companion object
     {
         private val m_GSON = GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create()
@@ -49,14 +51,15 @@ class Weather_gov_data
             }
             catch(exception: JsonSyntaxException)
             {
-                println("Bad data format for Forecast_data: $exception")
+                println("Bad data format for Weather_gov_data: $exception")
                 println(">>>$string_JSON<<<")
             }
+
             return `object`
         }
     }
 
-    fun serialize_to_JSON(): String?
+    fun serialize_to_JSON(): String
     {
         return serialize_to_JSON(this)
     }

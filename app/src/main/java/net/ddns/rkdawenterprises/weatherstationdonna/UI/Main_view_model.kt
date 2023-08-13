@@ -401,7 +401,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
             }
 
             load_forecast_location_setting(application_context) { forecast_location_setting ->
-                viewModelScope.launch() {
+                viewModelScope.launch()
+                {
                     val value: Array<String> = try
                     {
                         val location = process_location_for_get_points(forecast_location_setting);
@@ -423,7 +424,11 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
                         val gridpoints_stations = gridpoints_all[3];
                         val stations_observations_latest = get_stations_observations(location,
                                                                                      gridpoints_stations);
-                        arrayOf("success",
+                        val alerts_active_pretty = get_alerts_active(location[0],
+                                                                     location[1]);
+                        Log.d(LOG_TAG, "Got all weather.gov data")
+                        // TODO: Create JSON array with with what is needed in the UI.
+                            arrayOf("success",
                                 "");
                     }
                     catch(exception: Exception)
@@ -450,6 +455,17 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
         }
     }
 
+    private suspend fun get_alerts_active(latitude: String,
+                                          longitude: String): String
+    {
+        val alerts_active_JSON =
+            Weather_gov_API.m_weather_gov_API_service.get_alerts_active("${latitude},${longitude}");
+        delay(10);
+        val alerts_active = JSONObject(alerts_active_JSON);
+        val alerts_active_pretty = alerts_active.toString(4);
+        return alerts_active_pretty;
+    }
+
     private suspend fun get_stations_observations(location: Array<String>,
                                                   gridpoints_stations_JSON: String): String
     {
@@ -458,8 +474,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
 
         val station_identifier: String = station_ID[0];
         val station_name: String = station_ID[1];
-        val observations = Weather_gov_API.m_weather_gov_API_service.get_stations(station_identifier,
-                                                                                  "/observations/latest");
+        val observations = Weather_gov_API.m_weather_gov_API_service.get_stations_observations_latest(station_identifier);
         delay(10);
         return observations;
     }
@@ -496,8 +511,6 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
             }
         }
 
-        Log.d(LOG_TAG, "Closest station is $closest_station_identifier, $closest_station_name, distance=$running_delta km");
-
         return arrayOf(closest_station_identifier, closest_station_name);
     }
 
@@ -524,27 +537,25 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
         val gridpoints_pretty = gridpoints.toString(4);
 
         val gridpoints_forecast_JSON =
-            Weather_gov_API.m_weather_gov_API_service.get_gridpoints(wfo,
-                                                                     x,
-                                                                     y,
-                                                                     "/forecast");
+            Weather_gov_API.m_weather_gov_API_service.get_gridpoints_forecast(wfo,
+                                                                              x,
+                                                                              y);
         delay(10);
         val gridpoints_forecast = JSONObject(gridpoints_forecast_JSON);
         val gridpoints_forecast_pretty = gridpoints_forecast.toString(4);
 
         val gridpoints_forecast_hourly_JSON =
-            Weather_gov_API.m_weather_gov_API_service.get_gridpoints(wfo,
-                                                                     x,
-                                                                     y,
-                                                                     "/forecast/hourly");
+            Weather_gov_API.m_weather_gov_API_service.get_gridpoints_forecast_hourly(wfo,
+                                                                                     x,
+                                                                                     y);
         delay(10);
         val gridpoints_forecast_hourly = JSONObject(gridpoints_forecast_hourly_JSON);
         val gridpoints_forecast_hourly_pretty = gridpoints_forecast_hourly.toString(4);
 
-        val gridpoints_stations_JSON = Weather_gov_API.m_weather_gov_API_service.get_gridpoints(wfo,
-                                                                                                x,
-                                                                                                y,
-                                                                                                "/stations");
+        val gridpoints_stations_JSON =
+            Weather_gov_API.m_weather_gov_API_service.get_gridpoints_stations(wfo,
+                                                                              x,
+                                                                              y);
         delay(10);
         val gridpoints_stations = JSONObject(gridpoints_stations_JSON);
         val gridpoints_stations_pretty = gridpoints_stations.toString(4);
@@ -641,7 +652,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
 
     fun load_night_mode_selection(context: Context)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             update_night_mode(context,
                               User_settings.get_night_mode_selection(context).first())
         }
@@ -650,7 +662,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun load_night_mode_selection(context: Context,
                                   function: (Int) -> Unit)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             function(User_settings.get_night_mode_selection(context).first());
         }
     }
@@ -658,7 +671,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun store_night_mode_selection(context: Context,
                                    selection: Int)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             User_settings.store_night_mode_selection(context,
                                                      selection);
             update_night_mode(context,
@@ -669,7 +683,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun load_forecast_location_setting(context: Context,
                                        function: (String) -> Unit)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             function(User_settings.get_forecast_location_setting(context).first());
         }
     }
@@ -677,7 +692,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun store_forecast_location_setting(context: Context,
                                         location: String)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             User_settings.store_forecast_location_setting(context,
                                                           location);
         }
@@ -686,7 +702,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun load_download_over_wifi_only(context: Context,
                                      function: (Boolean) -> Unit)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             function(User_settings.load_download_over_wifi_only(context).first());
         }
     }
@@ -694,7 +711,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun store_download_over_wifi_only(context: Context,
                                       value: Boolean)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             User_settings.store_download_over_wifi_only(context,
                                                         value);
         }
@@ -703,7 +721,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun load_auto_hide_toolbars(context: Context,
                                 function: (Boolean) -> Unit)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             function(User_settings.load_auto_hide_toolbars(context).first());
         }
     }
@@ -711,7 +730,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun store_auto_hide_toolbars(context: Context,
                                  value: Boolean)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             User_settings.store_auto_hide_toolbars(context,
                                                    value);
         }
@@ -720,7 +740,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun load_last_weather_data_fetched(context: Context,
                                        function: (Data_storage) -> Unit)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             function(User_settings.load_last_weather_data_fetched(context).first());
         }
     }
@@ -728,7 +749,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun store_last_weather_data_fetched(context: Context,
                                         data_storage: Data_storage)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             User_settings.store_last_weather_data_fetched(context,
                                                           data_storage);
         }
@@ -760,7 +782,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun is_ok_to_fetch_data(context: Context,
                             function: (Boolean) -> Unit)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             function(User_settings.is_ok_to_fetch_data(context).first());
         }
     }
