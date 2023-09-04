@@ -331,7 +331,7 @@ class Main_activity: AppCompatActivity()
                 MaterialAlertDialogBuilder(this)
                     .setView(binding.root)
                     .setTitle(R.string.set_forecast_location)
-                    .setPositiveButton(getString(R.string.ok)) { dialog, _ ->
+                    .setPositiveButton(getString(R.string.ok)) { _, _ ->
                         m_main_view_model.store_forecast_location_setting(this, text_input.text.toString());
                         cancellation_source.cancel();
                     }
@@ -470,9 +470,10 @@ class Main_activity: AppCompatActivity()
             {
                 if((data_storage.m_data_RKDAWE != null)
                     && (data_storage.m_data_davis != null)
-                    && (data_storage.m_page_davis != null))
+                    && (data_storage.m_page_davis != null)
+                    && (data_storage.m_data_weather_gov != null))
                 {
-                    m_main_view_model.store_last_weather_data_fetched(this, data_storage);
+                    //TODO: m_main_view_model.store_last_weather_data_fetched(this, data_storage);
                 }
             }
         }

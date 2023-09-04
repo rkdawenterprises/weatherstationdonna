@@ -79,23 +79,8 @@ fun About_dialog(on_ok: () -> Unit,
 fun Text_view_from_HTML(@StringRes string_ID: Int)
 {
     val string_HTML = LocalContext.current.resources.getText(string_ID).toString();
-    val text_spanned: Spanned = when
-    {
-        (string_HTML == null) ->
-        {
-            SpannableString("")
-        }
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ->
-        {
-            Html.fromHtml(string_HTML,
-                          Html.FROM_HTML_MODE_LEGACY)
-        }
-        else ->
-        {
-            @Suppress("DEPRECATION")
-            Html.fromHtml(string_HTML)
-        }
-    }
+    val text_spanned: Spanned = Html.fromHtml(string_HTML,
+                          Html.FROM_HTML_MODE_LEGACY);
 
     AndroidView(factory =
                 { context ->

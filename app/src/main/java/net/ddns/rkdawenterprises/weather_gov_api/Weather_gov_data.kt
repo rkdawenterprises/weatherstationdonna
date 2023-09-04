@@ -24,16 +24,24 @@
 
 package net.ddns.rkdawenterprises.weather_gov_api
 
+import android.util.Log
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonSyntaxException
 
 @SuppressWarnings("unused")
 class Weather_gov_data
 {
+    var city: String? = null;
+    var state: String? = null;
+    var gridpoints: Gridpoints? = null;
+
     // TODO: Flesh out Weather_gov_data with what is needed in the UI.
     
     companion object
     {
+        @Suppress("unused")
+        private const val LOG_TAG = "Weather_gov_data";
+
         private val m_GSON = GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create()
 
         fun serialize_to_JSON(`object`: Weather_gov_data): String
@@ -47,12 +55,12 @@ class Weather_gov_data
             try
             {
                 `object` = m_GSON.fromJson(string_JSON,
-                                           Weather_gov_data::class.java)
+                                           Weather_gov_data::class.java);
             }
             catch(exception: JsonSyntaxException)
             {
-                println("Bad data format for Weather_gov_data: $exception")
-                println(">>>$string_JSON<<<")
+                Log.d(LOG_TAG, "Bad data format for Weather_gov_data: $exception");
+//                Log.d(LOG_TAG, ">>>$string_JSON<<<");
             }
 
             return `object`

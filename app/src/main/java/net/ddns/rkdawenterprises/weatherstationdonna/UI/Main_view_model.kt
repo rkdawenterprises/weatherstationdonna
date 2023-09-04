@@ -105,8 +105,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
 
                 try
                 {
-                    @Suppress("unused")
-                    instance = s_GSON.fromJson(string_JSON,
+                    @Suppress("unused") instance = s_GSON.fromJson(string_JSON,
                                                                    Data_storage::class.java)
                 }
                 catch(exception: JsonSyntaxException)
@@ -220,8 +219,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
 
         fun is_empty(): Boolean
         {
-            return ((m_data_RKDAWE == null) && (m_data_davis == null)
-                    && (m_page_davis == null) && (m_data_weather_gov == null))
+            return ((m_data_RKDAWE == null) && (m_data_davis == null) && (m_page_davis == null) && (m_data_weather_gov == null))
         }
 
         fun serialize_to_JSON(): String?
@@ -235,12 +233,12 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
         @Suppress("unused")
         private const val LOG_TAG = "Main_view_model";
 
-        private const val STATE_IDLE =    0b0000000;
+        private const val STATE_IDLE = 0b0000000;
         private const val STATE_STARTED = 0b0000010;
-        private const val STATE_FIRST =   0b0000100;
-        private const val STATE_SECOND =  0b0001000;
-        private const val STATE_THIRD =   0b0010000;
-        private const val STATE_FOURTH =  0b0100000;
+        private const val STATE_FIRST = 0b0000100;
+        private const val STATE_SECOND = 0b0001000;
+        private const val STATE_THIRD = 0b0010000;
+        private const val STATE_FOURTH = 0b0100000;
         private const val STATE_ALL = STATE_STARTED or STATE_FIRST or STATE_SECOND or STATE_THIRD or STATE_FOURTH;
     }
 
@@ -262,18 +260,22 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     }
 
     private val m_first_response = MutableLiveData<Array<String>>();
+
     @Suppress("unused")
     val first_response: LiveData<Array<String>> get() = m_first_response;
 
     private val m_second_response = MutableLiveData<Array<String>>();
+
     @Suppress("unused")
     val second_response: LiveData<Array<String>> get() = m_second_response;
 
     private val m_third_response = MutableLiveData<Array<String>>();
+
     @Suppress("unused")
     val third_response: LiveData<Array<String>> get() = m_third_response;
 
     private val m_fourth_response = MutableLiveData<Array<String>>();
+
     @Suppress("unused")
     val fourth_response: LiveData<Array<String>> get() = m_fourth_response;
 
@@ -335,15 +337,11 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
                 }
 
                 m_first_response.value = value;
-                val combined_value = combine_latest_data(STATE_FIRST,
-                                                         value,
-                                                         m_second_response.value,
-                                                         m_third_response.value,
-                                                         m_fourth_response.value);
-                if(get_state() == STATE_IDLE)
-                {
-                    m_combined_response.value = combined_value;
-                }
+                combine_latest_data(STATE_FIRST,
+                                    value,
+                                    m_second_response.value,
+                                    m_third_response.value,
+                                    m_fourth_response.value);
             }
 
             viewModelScope.launch {
@@ -361,15 +359,11 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
                 }
 
                 m_second_response.value = value;
-                val combined_value = combine_latest_data(STATE_SECOND,
-                                                         m_first_response.value,
-                                                         value,
-                                                         m_third_response.value,
-                                                         m_fourth_response.value);
-                if(get_state() == STATE_IDLE)
-                {
-                    m_combined_response.value = combined_value;
-                }
+                combine_latest_data(STATE_SECOND,
+                                    m_first_response.value,
+                                    value,
+                                    m_third_response.value,
+                                    m_fourth_response.value);
             }
 
             viewModelScope.launch {
@@ -389,27 +383,22 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
                 }
 
                 m_third_response.value = value;
-                val combined_value = combine_latest_data(STATE_THIRD,
-                                                         m_first_response.value,
-                                                         m_second_response.value,
-                                                         value,
-                                                         m_fourth_response.value);
-                if(get_state() == STATE_IDLE)
-                {
-                    m_combined_response.value = combined_value;
-                }
+                combine_latest_data(STATE_THIRD,
+                                    m_first_response.value,
+                                    m_second_response.value,
+                                    value,
+                                    m_fourth_response.value);
             }
 
             load_forecast_location_setting(application_context) { forecast_location_setting ->
-                viewModelScope.launch()
-                {
+                viewModelScope.launch() {
                     val value: Array<String> = try
                     {
                         val location = process_location_for_get_points(forecast_location_setting);
                         val points = get_points(location[0],
                                                 location[1]);
                         delay(10);
-                        
+
                         val wfo = points[0];
                         val x = points[1];
                         val y = points[2];
@@ -426,10 +415,20 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
                                                                                      gridpoints_stations);
                         val alerts_active_pretty = get_alerts_active(location[0],
                                                                      location[1]);
-                        Log.d(LOG_TAG, "Got all weather.gov data")
-                        // TODO: Create JSON array with with what is needed in the UI.
-                            arrayOf("success",
-                                "");
+
+
+                        Log.d(LOG_TAG,
+                              "Got all weather.gov data")
+                        // TODO: Create JSON object with with what is needed in the UI.
+
+                        arrayOf("success",
+                                """
+                                    {
+                                        "city": "$city",     
+                                        "state": "$state",     
+                                        "gridpoints": $gridpoints
+                                    }
+                                """.trimMargin());
                     }
                     catch(exception: Exception)
                     {
@@ -441,15 +440,11 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
                     }
 
                     m_fourth_response.value = value;
-                    val combined_value = combine_latest_data(STATE_FOURTH,
-                                                             m_first_response.value,
-                                                             m_second_response.value,
-                                                             m_third_response.value,
-                                                             value);
-                    if(get_state() == STATE_IDLE)
-                    {
-                        m_combined_response.value = combined_value;
-                    }
+                    combine_latest_data(STATE_FOURTH,
+                                        m_first_response.value,
+                                        m_second_response.value,
+                                        m_third_response.value,
+                                        value);
                 }
             }
         }
@@ -458,8 +453,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     private suspend fun get_alerts_active(latitude: String,
                                           longitude: String): String
     {
-        val alerts_active_JSON =
-            Weather_gov_API.m_weather_gov_API_service.get_alerts_active("${latitude},${longitude}");
+        val alerts_active_JSON = Weather_gov_API.m_weather_gov_API_service.get_alerts_active("${latitude},${longitude}");
         delay(10);
         val alerts_active = JSONObject(alerts_active_JSON);
         val alerts_active_pretty = alerts_active.toString(4);
@@ -511,15 +505,17 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
             }
         }
 
-        return arrayOf(closest_station_identifier, closest_station_name);
+        return arrayOf(closest_station_identifier,
+                       closest_station_name);
     }
 
-    private fun distance_between_points_km(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double
+    private fun distance_between_points_km(lat1: Double,
+                                           lon1: Double,
+                                           lat2: Double,
+                                           lon2: Double): Double
     {
         val p = Math.PI / 180;
-        return( 2 * 6371 * asin(sqrt(0.5 - cos((lat2 - lat1) * p) / 2
-                                             + cos(lat1 * p) * cos(lat2 * p) *
-                                             (1 - cos((lon2 - lon1) * p)) / 2)));
+        return (2 * 6371 * asin(sqrt(0.5 - cos((lat2 - lat1) * p) / 2 + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2)));
     }
 
     /**
@@ -536,26 +532,23 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
         val gridpoints = JSONObject(gridpoints_JSON);
         val gridpoints_pretty = gridpoints.toString(4);
 
-        val gridpoints_forecast_JSON =
-            Weather_gov_API.m_weather_gov_API_service.get_gridpoints_forecast(wfo,
-                                                                              x,
-                                                                              y);
+        val gridpoints_forecast_JSON = Weather_gov_API.m_weather_gov_API_service.get_gridpoints_forecast(wfo,
+                                                                                                         x,
+                                                                                                         y);
         delay(10);
         val gridpoints_forecast = JSONObject(gridpoints_forecast_JSON);
         val gridpoints_forecast_pretty = gridpoints_forecast.toString(4);
 
-        val gridpoints_forecast_hourly_JSON =
-            Weather_gov_API.m_weather_gov_API_service.get_gridpoints_forecast_hourly(wfo,
-                                                                                     x,
-                                                                                     y);
+        val gridpoints_forecast_hourly_JSON = Weather_gov_API.m_weather_gov_API_service.get_gridpoints_forecast_hourly(wfo,
+                                                                                                                       x,
+                                                                                                                       y);
         delay(10);
         val gridpoints_forecast_hourly = JSONObject(gridpoints_forecast_hourly_JSON);
         val gridpoints_forecast_hourly_pretty = gridpoints_forecast_hourly.toString(4);
 
-        val gridpoints_stations_JSON =
-            Weather_gov_API.m_weather_gov_API_service.get_gridpoints_stations(wfo,
-                                                                              x,
-                                                                              y);
+        val gridpoints_stations_JSON = Weather_gov_API.m_weather_gov_API_service.get_gridpoints_stations(wfo,
+                                                                                                         x,
+                                                                                                         y);
         delay(10);
         val gridpoints_stations = JSONObject(gridpoints_stations_JSON);
         val gridpoints_stations_pretty = gridpoints_stations.toString(4);
@@ -617,11 +610,11 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
                                             first_value: Array<String>?,
                                             second_value: Array<String>?,
                                             third_value: Array<String>?,
-                                            fourth_value: Array<String>?): Data_storage
+                                            fourth_value: Array<String>?)
     {
         or_state(state);
 
-        return if(get_state() == STATE_ALL)
+        val combined_response = if(get_state() == STATE_ALL)
         {
             set_state(STATE_IDLE);
 
@@ -642,6 +635,11 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
         {
             Data_storage();
         }
+
+        if(get_state() == STATE_IDLE)
+        {
+            m_combined_response.value = combined_response;
+        }
     }
 
     @Suppress("unused")
@@ -652,8 +650,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
 
     fun load_night_mode_selection(context: Context)
     {
-        viewModelScope.launch()
-        {
+        viewModelScope.launch() {
             update_night_mode(context,
                               User_settings.get_night_mode_selection(context).first())
         }
@@ -662,8 +659,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun load_night_mode_selection(context: Context,
                                   function: (Int) -> Unit)
     {
-        viewModelScope.launch()
-        {
+        viewModelScope.launch() {
             function(User_settings.get_night_mode_selection(context).first());
         }
     }
@@ -671,8 +667,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun store_night_mode_selection(context: Context,
                                    selection: Int)
     {
-        viewModelScope.launch()
-        {
+        viewModelScope.launch() {
             User_settings.store_night_mode_selection(context,
                                                      selection);
             update_night_mode(context,
@@ -683,8 +678,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun load_forecast_location_setting(context: Context,
                                        function: (String) -> Unit)
     {
-        viewModelScope.launch()
-        {
+        viewModelScope.launch() {
             function(User_settings.get_forecast_location_setting(context).first());
         }
     }
@@ -692,8 +686,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun store_forecast_location_setting(context: Context,
                                         location: String)
     {
-        viewModelScope.launch()
-        {
+        viewModelScope.launch() {
             User_settings.store_forecast_location_setting(context,
                                                           location);
         }
@@ -702,8 +695,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun load_download_over_wifi_only(context: Context,
                                      function: (Boolean) -> Unit)
     {
-        viewModelScope.launch()
-        {
+        viewModelScope.launch() {
             function(User_settings.load_download_over_wifi_only(context).first());
         }
     }
@@ -711,8 +703,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun store_download_over_wifi_only(context: Context,
                                       value: Boolean)
     {
-        viewModelScope.launch()
-        {
+        viewModelScope.launch() {
             User_settings.store_download_over_wifi_only(context,
                                                         value);
         }
@@ -721,8 +712,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun load_auto_hide_toolbars(context: Context,
                                 function: (Boolean) -> Unit)
     {
-        viewModelScope.launch()
-        {
+        viewModelScope.launch() {
             function(User_settings.load_auto_hide_toolbars(context).first());
         }
     }
@@ -730,8 +720,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun store_auto_hide_toolbars(context: Context,
                                  value: Boolean)
     {
-        viewModelScope.launch()
-        {
+        viewModelScope.launch() {
             User_settings.store_auto_hide_toolbars(context,
                                                    value);
         }
@@ -740,8 +729,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun load_last_weather_data_fetched(context: Context,
                                        function: (Data_storage) -> Unit)
     {
-        viewModelScope.launch()
-        {
+        viewModelScope.launch() {
             function(User_settings.load_last_weather_data_fetched(context).first());
         }
     }
@@ -749,8 +737,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun store_last_weather_data_fetched(context: Context,
                                         data_storage: Data_storage)
     {
-        viewModelScope.launch()
-        {
+        viewModelScope.launch() {
             User_settings.store_last_weather_data_fetched(context,
                                                           data_storage);
         }
@@ -782,8 +769,7 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun is_ok_to_fetch_data(context: Context,
                             function: (Boolean) -> Unit)
     {
-        viewModelScope.launch()
-        {
+        viewModelScope.launch() {
             function(User_settings.is_ok_to_fetch_data(context).first());
         }
     }
@@ -890,9 +876,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
         suspend fun store_forecast_location_setting(context: Context,
                                                     location: String)
         {
-            context.user_preferences_data_store.edit()
-            { preferences ->
-                    preferences[FORECAST_LOCATION_SETTING_KEY] = location;
+            context.user_preferences_data_store.edit() { preferences ->
+                preferences[FORECAST_LOCATION_SETTING_KEY] = location;
             }
         }
 

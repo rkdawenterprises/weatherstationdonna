@@ -18,6 +18,7 @@ package net.ddns.rkdawenterprises.davis_website;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 
 public class Weather_page {
     public String deviceId;
@@ -113,7 +114,7 @@ public class Weather_page {
             object = m_GSON.fromJson( string_JSON,
                     Weather_page.class );
         }
-        catch( com.google.gson.JsonSyntaxException exception )
+        catch( JsonSyntaxException exception )
         {
             System.out.println( "Bad data format for Weather_data: " + exception );
             System.out.println( ">>>" + string_JSON + "<<<" );

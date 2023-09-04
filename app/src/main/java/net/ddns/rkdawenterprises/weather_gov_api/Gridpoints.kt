@@ -25,7 +25,9 @@
 
 package net.ddns.rkdawenterprises.weather_gov_api
 
-class Gridpoint
+import java.math.BigDecimal
+
+class Gridpoints
 {
     var context: List<String>? = null
     var id: String? = null
@@ -37,7 +39,7 @@ class Gridpoint
 class Geometry
 {
     var type: String? = null
-    var coordinates: List<List<List<Double>>>? = null
+    var coordinates: List<List<List<BigDecimal>>>? = null
 }
 
 class Properties
@@ -114,7 +116,7 @@ class Properties
 class Elevation
 {
     var unitCode: String? = null
-    var value: Double? = null
+    var value: BigDecimal? = null
 }
 
 class Temperature

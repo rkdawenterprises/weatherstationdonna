@@ -106,7 +106,7 @@ fun Simple_table(columns: List<Data_column>,
                  rows: List<List<String>>)
 {
     rows.forEachIndexed()
-    { index, cells ->
+    { _, cells ->
         if(cells.isNotEmpty())
         {
             if(columns.size == cells.size)

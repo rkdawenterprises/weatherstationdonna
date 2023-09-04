@@ -130,12 +130,6 @@ fun Main(main_view_model: Main_view_model = viewModel())
 
                             item()
                             {
-                                Divider(color = MaterialTheme.material_colors_extended.view_divider,
-                                        modifier = Modifier.fillMaxWidth().height(4.dp))
-                            }
-
-                            item()
-                            {
                                 Forecast(weather_forecast);
                             }
 
