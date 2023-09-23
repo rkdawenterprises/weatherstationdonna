@@ -20,6 +20,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -51,7 +53,9 @@ public class Weather_data {
     public long hiTempDate;
     public long loTempDate;
 
-    public static String get_part_of_day(int the_hour) {
+    @Nullable
+    public static String get_part_of_day(int the_hour)
+    {
         if ((the_hour >= 5) && (the_hour < 12)) {
             return "morning";
         } else if ((the_hour >= 12) && (the_hour < 17)) {
@@ -61,13 +65,17 @@ public class Weather_data {
         } else if (((the_hour >= 21) && (the_hour < 24)) || ((the_hour >= 0) && (the_hour < 5))) {
             return "night";
         } else {
-            throw new IllegalArgumentException("Invalid hour of the day: " + the_hour);
+            return null;
         }
     }
 
+    @Nullable
     public static String get_forecast_icon_uri_for_date(ZonedDateTime zoned_date_time_local,
-                                                        Forecast_overview[] forecast_overviews) {
+                                                        Forecast_overview[] forecast_overviews)
+    {
         String part_of_day = get_part_of_day(zoned_date_time_local.getHour());
+        if(part_of_day == null) return null;
+        
         String local_date_time_formatted = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(zoned_date_time_local);
 
         for (Forecast_overview fo : forecast_overviews) {
@@ -76,7 +84,7 @@ public class Weather_data {
             }
         }
 
-        throw new IllegalArgumentException("Could not find forecast overview for: " + part_of_day + " of " + local_date_time_formatted);
+        return null;
     }
 
     public static final Gson m_GSON = new GsonBuilder().disableHtmlEscaping()

@@ -25,16 +25,11 @@
 
 package net.ddns.rkdawenterprises.weatherstationdonna.UI
 
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Surface
@@ -45,16 +40,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import java.math.BigDecimal
-import java.time.Duration
+import java.math.RoundingMode
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 @Suppress("unused")
 private const val LOG_TAG = "Line_time_graph_composable";
@@ -71,33 +66,34 @@ data class Point_and_time(val value: BigDecimal,
 @Composable
 fun Line_time_graph(modifier: Modifier,
                     line_graph_data: Line_time_graph_data,
-                    x_axis_resolution: Duration,
-                    y_axis_resolution: BigDecimal,
-                    x_axis_increments: Int,
-                    y_axis_increments: Int,
+                    x_axis_resolution: ChronoUnit,
                     x_axis_increment_size: Dp,
+                    y_axis_resolution: Int,
+                    y_axis_number_increments_minimum: Int,
                     y_height: Dp,
                     y_axis_padding: Dp,
                     background_color: Color = Color.White)
 {
+    if((x_axis_resolution != ChronoUnit.DAYS) && (x_axis_resolution != ChronoUnit.HOURS)) return;
+
     val scope = rememberCoroutineScope();
 
-    Surface(modifier = modifier) {
+    Surface(modifier = modifier)
+    {
         with(line_graph_data) {
-            val scrollOffset = remember { mutableFloatStateOf(0f) }
-            val maxScrollOffset = remember { mutableFloatStateOf(0f) }
-            val scrollState = rememberScrollableState() { delta ->
-                scrollOffset.value -= delta
-                scrollOffset.value = when
+            val scroll_offset = remember { mutableFloatStateOf(0f) }
+            val maximum_scroll_offset = remember { mutableFloatStateOf(0f) }
+            val scrollable_state = rememberScrollableState()
+            { delta ->
+                scroll_offset.value -= delta
+                scroll_offset.value = when
                 {
-                    (scrollOffset.value < 0f)                    -> 0f
-                    (scrollOffset.value > maxScrollOffset.value) -> maxScrollOffset.value
-                    else                                         -> scrollOffset.value
+                    (scroll_offset.value < 0f) -> 0f
+                    (scroll_offset.value > maximum_scroll_offset.value) -> maximum_scroll_offset.value
+                    else -> scroll_offset.value
                 }
                 delta
             }
-
-            var columnWidth by remember { mutableFloatStateOf(0f) }
 
             var y_axis_labels_area_width by remember { mutableStateOf(0.dp) }
             var y_axis_line_area_width by remember { mutableStateOf(0.dp) }
@@ -105,35 +101,272 @@ fun Line_time_graph(modifier: Modifier,
             Box(modifier = modifier.clipToBounds())
             {
                 // Make a list of x-axis and y-axis labels.
-                var y_value = line_graph_data.y_min;
-                val y_axis_label_list: MutableList<BigDecimal> = mutableListOf<BigDecimal>();
-                for(i in 0..y_axis_increments - 1)
-                {
-                    y_axis_label_list.add(y_value);
-                    y_value += y_axis_resolution;
-                }
+                val y_axis_label_list = y_axis_labels(line_graph_data.y_min,
+                                                      line_graph_data.y_max,
+                                                      y_axis_resolution,
+                                                      y_axis_number_increments_minimum)
 
-                Log.d(LOG_TAG, "${y_axis_label_list.size}")
-                
+                val x_axis_label_list = x_axis_labels(line_graph_data.time_min,
+                                                      line_graph_data.time_max,
+                                                      x_axis_resolution)
+
+
                 // Need to determine y-axis width and x-axis height to know how large the unused area in the lower left corner is.
 
                 // Draw y-axis.
-                Column(modifier = modifier.clipToBounds())
-                {
-                    Canvas(modifier = modifier.clipToBounds()
+                Column(modifier = modifier.clipToBounds()) {
+                    Canvas(modifier = modifier
+                        .clipToBounds()
                         .width(y_axis_labels_area_width + y_axis_line_area_width + (y_axis_padding * 2))
                         .height(y_height)
-                        .background(background_color))
-                    {
+                        .background(background_color)) {
 
                     }
                 }
 
 
-
-
-
                 // Draw line graph.
+            }
+        }
+    }
+}
+
+fun x_axis_labels(minimum: ZonedDateTime,
+                  maximum: ZonedDateTime,
+                  resolution: ChronoUnit): Array<String>
+{
+    val increments = (resolution.between(minimum,
+                                         maximum) + 1).toInt();
+    val start = minimum.truncatedTo(resolution);
+    val array = ArrayList<String>();
+    val hour_formater = DateTimeFormatter.ofPattern("hh a");
+    val day_formater = DateTimeFormatter.ofPattern("EE");
+    var value = start;
+    for(i in 0 until increments)
+    {
+        val value_string = if((i == 0) && (resolution == ChronoUnit.DAYS))
+        {
+            "TODAY ${value.dayOfMonth}";
+        }
+        else if(resolution == ChronoUnit.DAYS)
+        {
+            "${day_formater.format(value).uppercase()} ${value.dayOfMonth}";
+        }
+        else
+        {
+            hour_formater.format(value);
+        }
+
+        array.add(value_string);
+        value = value.plus(1,
+                           resolution);
+    }
+
+    return array.toTypedArray();
+}
+
+fun y_axis_labels(minimum: BigDecimal,
+                  maximum: BigDecimal,
+                  resolution: Int,
+                  increments_minimum: Int): Array<String>
+{
+    val minimum_rounded = round_to_multiple_of(minimum,
+                                               resolution,
+                                               RoundingMode.FLOOR);
+    val maximum_rounded = round_to_multiple_of(maximum,
+                                               resolution,
+                                               RoundingMode.CEILING);
+    val delta = maximum_rounded - minimum_rounded;
+    val increments = ((delta) / resolution) + 1;
+    val array = ArrayList<String>();
+    return if(increments >= increments_minimum)
+    {
+        for(value in minimum_rounded..maximum_rounded step resolution)
+        {
+            array.add(value.toString());
+        }
+
+        array.toTypedArray();
+    }
+    else
+    {
+        val increment = BigDecimal(delta).divide(BigDecimal(increments_minimum),
+                                                 4,
+                                                 RoundingMode.HALF_EVEN);
+        var value = BigDecimal(minimum_rounded);
+        for(i in 0..increments_minimum)
+        {
+            val value_string = value.setScale(1,
+                                              RoundingMode.HALF_EVEN).stripTrailingZeros().toPlainString();
+            array.add(value_string);
+            value = value.add(increment);
+        }
+
+        array.toTypedArray();
+    }
+}
+
+fun round_to_multiple_of(value: BigDecimal,
+                         multiple: Int,
+                         mode: RoundingMode = RoundingMode.UP): Int
+{
+    val big_multiple = BigDecimal(multiple);
+    val half_big_multiple = big_multiple.divide(BigDecimal("2.0"),
+                                                4,
+                                                RoundingMode.HALF_EVEN);
+    val modulus = value.remainder(big_multiple).abs();
+    val big_muliple_minus_modulus = big_multiple.minus(modulus);
+
+    if(modulus.compareTo(BigDecimal.ZERO) == 0)
+    {
+        return value.toInt();
+    }
+
+    return if(value.signum() > 0)
+    {
+        when(mode)
+        {
+            //  Away from zero, or towards positive infinity.
+            RoundingMode.UP, RoundingMode.CEILING -> (value.plus(big_muliple_minus_modulus)).toInt();
+
+            // Towards zero, or towards negative infinity.
+            RoundingMode.DOWN, RoundingMode.FLOOR -> (value.minus(modulus)).toInt();
+
+            // Towards "nearest neighbor" unless both neighbors are equidistant, in which case round away from zero.
+            RoundingMode.HALF_UP ->
+            {
+                val x = if(modulus < half_big_multiple)
+                {
+                    value.minus(modulus).toInt();
+                }
+                else
+                {
+                    value.plus(big_multiple.minus(modulus)).toInt();
+                }
+
+                x;
+            }
+
+            // Towards "nearest neighbor" unless both neighbors are equidistant, in which case round towards zero.
+            RoundingMode.HALF_DOWN ->
+            {
+                val x = if(modulus <= half_big_multiple)
+                {
+                    value.minus(modulus).toInt();
+                }
+                else
+                {
+                    value.plus(big_multiple.minus(modulus)).toInt();
+                }
+
+                x;
+            }
+
+            // Towards the "nearest neighbor" unless both neighbors are equidistant, in which case round towards the even neighbor.
+            RoundingMode.HALF_EVEN ->
+            {
+                val rounded_up = value.plus(big_multiple.minus(modulus)).toInt();
+                val rounded_down = value.minus(modulus).toInt();
+                val round_down_is_even = rounded_down % 2 == 0;
+                val round_up_is_even = rounded_up % 2 == 0;
+
+                val x = if((modulus.compareTo(half_big_multiple) == 0) && (round_down_is_even))
+                {
+                    rounded_down;
+                }
+                else if((modulus.compareTo(half_big_multiple) == 0) && (round_up_is_even))
+                {
+                    rounded_up;
+                }
+                else if(modulus < half_big_multiple)
+                {
+                    rounded_down;
+                }
+                else
+                {
+                    rounded_up;
+                }
+
+                x;
+            }
+
+            else ->
+            {
+                throw (ArithmeticException());
+            }
+        }
+    }
+    else
+    {
+        when(mode)
+        {
+            //  Towards zero, or towards positive infinity.
+            RoundingMode.DOWN, RoundingMode.CEILING -> (value.plus(modulus)).toInt();
+
+            // Away from zero, or towards negative infinity.
+            RoundingMode.UP, RoundingMode.FLOOR -> (value.minus(big_muliple_minus_modulus)).toInt();
+
+            // Towards "nearest neighbor" unless both neighbors are equidistant, in which case round away from zero.
+            RoundingMode.HALF_UP ->
+            {
+                val x = if(modulus < half_big_multiple)
+                {
+                    value.plus(modulus).toInt();
+                }
+                else
+                {
+                    value.minus(big_multiple.minus(modulus)).toInt();
+                }
+
+                x;
+            }
+
+            // Towards "nearest neighbor" unless both neighbors are equidistant, in which case round towards zero.
+            RoundingMode.HALF_DOWN ->
+            {
+                val x = if(modulus <= half_big_multiple)
+                {
+                    value.plus(modulus).toInt();
+                }
+                else
+                {
+                    value.minus(big_multiple.minus(modulus)).toInt();
+                }
+
+                x;
+            }
+
+            // Towards the "nearest neighbor" unless both neighbors are equidistant, in which case round towards the even neighbor.
+            RoundingMode.HALF_EVEN ->
+            {
+                val rounded_down = value.plus(modulus).toInt();
+                val rounded_up = value.minus(big_multiple.minus(modulus)).toInt();
+                val round_down_is_even = rounded_down % 2 == 0;
+                val round_up_is_even = rounded_up % 2 == 0;
+
+                val x = if((modulus.compareTo(half_big_multiple) == 0) && (round_down_is_even))
+                {
+                    rounded_down;
+                }
+                else if((modulus.compareTo(half_big_multiple) == 0) && (round_up_is_even))
+                {
+                    rounded_up;
+                }
+                else if(modulus < half_big_multiple)
+                {
+                    rounded_down;
+                }
+                else
+                {
+                    rounded_up;
+                }
+
+                x;
+            }
+
+            else ->
+            {
+                throw (ArithmeticException());
             }
         }
     }

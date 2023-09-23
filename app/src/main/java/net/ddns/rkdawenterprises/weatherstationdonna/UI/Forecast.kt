@@ -26,36 +26,18 @@
 package net.ddns.rkdawenterprises.weatherstationdonna.UI
 
 import android.util.Log
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.ddns.rkdawenterprises.weather_gov_api.Weather_gov_data
 import net.ddns.rkdawenterprises.weatherstationdonna.R
@@ -63,8 +45,8 @@ import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_typography
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.material_colors_extended
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.time.Duration
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 @Suppress("unused")
 private const val LOG_TAG = "Forecast_composable";
@@ -115,16 +97,14 @@ fun Daily_forecast(modifier: Modifier,
         val data_time_string = temperature_value.validTime;
         if((temperature != null) && (data_time_string != null))
         {
-            val temperature_truncated = temperature.setScale(4, RoundingMode.HALF_EVEN);
             val converted: BigDecimal =
                 if(convert_to_F)
                 {
-                    (((temperature_truncated * BigDecimal(9)) / BigDecimal(5))
-                            + BigDecimal(32));
+                    convert_Celsius_to_Fahrenheit(temperature).setScale(4, RoundingMode.HALF_EVEN);
                 }
                 else
                 {
-                    temperature_truncated;
+                    temperature.setScale(4, RoundingMode.HALF_EVEN);
                 }
 
             val date_time = if(data_time_string.contains('/'))
@@ -142,17 +122,16 @@ fun Daily_forecast(modifier: Modifier,
             if((temperature_min == null) || (converted < temperature_min)) temperature_min = converted;
             if((temperature_max == null) || (converted > temperature_max)) temperature_max = converted;
             if((date_time_min == null) || (date_time < date_time_min)) date_time_min = date_time;
-            if((date_time_max == null) || (date_time < date_time_max)) date_time_max = date_time;
+            if((date_time_max == null) || (date_time > date_time_max)) date_time_max = date_time;
         }
     }
 
     if((temperature_min != null) && (temperature_max != null) && (date_time_min != null) && (date_time_max != null))
     {
-        val x_axis_resolution = Duration.ofDays(1);
-        val y_axis_resolution = BigDecimal(5);
-        val x_axis_increments = points.size;
-        val y_axis_increments = ((temperature_max - temperature_min)
-                / y_axis_resolution).setScale(0, RoundingMode.UP).toInt();
+        Log.d(LOG_TAG, ">>>$temperature_min - $temperature_max, $date_time_min to $date_time_max");
+
+        val x_axis_resolution = ChronoUnit.DAYS;
+        val y_axis_resolution = 5;
         val line_graph_data = Line_time_graph_data(points,
                                                    date_time_min,
                                                    date_time_max,
@@ -162,10 +141,17 @@ fun Daily_forecast(modifier: Modifier,
                         line_graph_data = line_graph_data,
                         x_axis_resolution = x_axis_resolution,
                         y_axis_resolution = y_axis_resolution,
-                        x_axis_increments = x_axis_increments,
-                        y_axis_increments = y_axis_increments,
+                        y_axis_number_increments_minimum = 5,
                         x_axis_increment_size = 30.dp,
                         y_axis_padding = 10.dp,
                         y_height = 150.dp)
     }
+}
+
+fun convert_Celsius_to_Fahrenheit(c: BigDecimal): BigDecimal
+{
+    val conversion_factor = BigDecimal("9.0").divide(BigDecimal("5.0"),16, RoundingMode.HALF_EVEN);
+    val intermediate = c.multiply(conversion_factor);
+    val converted = intermediate.add(BigDecimal("32.0"));
+    return converted;
 }
