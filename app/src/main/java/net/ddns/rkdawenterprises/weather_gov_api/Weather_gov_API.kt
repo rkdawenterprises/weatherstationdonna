@@ -40,7 +40,7 @@ private val client: OkHttpClient = OkHttpClient.Builder()
 
 private val s_retrofit = Retrofit.Builder()
     .baseUrl(s_base_URI)
-//    .client(client)
+    .client(client)
     .addConverterFactory(ScalarsConverterFactory.create())
     .build();
 

@@ -46,11 +46,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.Main
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.Main_view_model
-import net.ddns.rkdawenterprises.weatherstationdonna.UI.round_to_multiple_of
 import net.ddns.rkdawenterprises.weatherstationdonna.databinding.ActivityMainBinding
 import net.ddns.rkdawenterprises.weatherstationdonna.databinding.ForecastLocationBinding
-import java.math.BigDecimal
-import java.math.RoundingMode
 import java.util.*
 
 /**

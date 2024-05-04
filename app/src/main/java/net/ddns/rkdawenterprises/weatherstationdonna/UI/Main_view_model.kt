@@ -408,13 +408,13 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
                                                                 x,
                                                                 y);
                         val gridpoints = gridpoints_all[0];
-                        val gridpoints_forecast = gridpoints_all[1];
-                        val gridpoints_forecast_hourly = gridpoints_all[2];
-                        val gridpoints_stations = gridpoints_all[3];
-                        val stations_observations_latest = get_stations_observations(location,
-                                                                                     gridpoints_stations);
-                        val alerts_active_pretty = get_alerts_active(location[0],
-                                                                     location[1]);
+//                        val gridpoints_forecast = gridpoints_all[1];
+//                        val gridpoints_forecast_hourly = gridpoints_all[2];
+//                        val gridpoints_stations = gridpoints_all[3];
+//                        val stations_observations_latest = get_stations_observations(location,
+//                                                                                     gridpoints_stations);
+//                        val alerts_active_pretty = get_alerts_active(location[0],
+//                                                                     location[1]);
 
 
                         Log.d(LOG_TAG,
@@ -532,31 +532,31 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
         val gridpoints = JSONObject(gridpoints_JSON);
         val gridpoints_pretty = gridpoints.toString(4);
 
-        val gridpoints_forecast_JSON = Weather_gov_API.m_weather_gov_API_service.get_gridpoints_forecast(wfo,
-                                                                                                         x,
-                                                                                                         y);
-        delay(10);
-        val gridpoints_forecast = JSONObject(gridpoints_forecast_JSON);
-        val gridpoints_forecast_pretty = gridpoints_forecast.toString(4);
+//        val gridpoints_forecast_JSON = Weather_gov_API.m_weather_gov_API_service.get_gridpoints_forecast(wfo,
+//                                                                                                         x,
+//                                                                                                         y);
+//        delay(10);
+//        val gridpoints_forecast = JSONObject(gridpoints_forecast_JSON);
+//        val gridpoints_forecast_pretty = gridpoints_forecast.toString(4);
 
-        val gridpoints_forecast_hourly_JSON = Weather_gov_API.m_weather_gov_API_service.get_gridpoints_forecast_hourly(wfo,
-                                                                                                                       x,
-                                                                                                                       y);
-        delay(10);
-        val gridpoints_forecast_hourly = JSONObject(gridpoints_forecast_hourly_JSON);
-        val gridpoints_forecast_hourly_pretty = gridpoints_forecast_hourly.toString(4);
+//        val gridpoints_forecast_hourly_JSON = Weather_gov_API.m_weather_gov_API_service.get_gridpoints_forecast_hourly(wfo,
+//                                                                                                                       x,
+//                                                                                                                       y);
+//        delay(10);
+//        val gridpoints_forecast_hourly = JSONObject(gridpoints_forecast_hourly_JSON);
+//        val gridpoints_forecast_hourly_pretty = gridpoints_forecast_hourly.toString(4);
 
-        val gridpoints_stations_JSON = Weather_gov_API.m_weather_gov_API_service.get_gridpoints_stations(wfo,
-                                                                                                         x,
-                                                                                                         y);
-        delay(10);
-        val gridpoints_stations = JSONObject(gridpoints_stations_JSON);
-        val gridpoints_stations_pretty = gridpoints_stations.toString(4);
+//        val gridpoints_stations_JSON = Weather_gov_API.m_weather_gov_API_service.get_gridpoints_stations(wfo,
+//                                                                                                         x,
+//                                                                                                         y);
+//        delay(10);
+//        val gridpoints_stations = JSONObject(gridpoints_stations_JSON);
+//        val gridpoints_stations_pretty = gridpoints_stations.toString(4);
 
         return arrayOf(gridpoints_pretty,
-                       gridpoints_forecast_pretty,
+                       /*gridpoints_forecast_pretty,
                        gridpoints_forecast_hourly_pretty,
-                       gridpoints_stations_pretty);
+                       gridpoints_stations_pretty*/);
     }
 
     /**

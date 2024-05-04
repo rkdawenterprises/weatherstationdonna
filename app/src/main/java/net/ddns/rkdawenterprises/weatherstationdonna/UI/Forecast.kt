@@ -30,6 +30,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
@@ -43,6 +44,7 @@ import net.ddns.rkdawenterprises.weather_gov_api.Weather_gov_data
 import net.ddns.rkdawenterprises.weatherstationdonna.R
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_typography
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.material_colors_extended
+import net.ddns.rkdawenterprises.weatherstationdonna.UI.ycharts.Point
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.ZonedDateTime
@@ -85,7 +87,11 @@ fun Daily_forecast(modifier: Modifier,
 
     if((temperature_unit == null) || (temperature_values == null) || (temperature_values.size < 10)) return;
 
-    val points: MutableList<Point_and_time> = mutableListOf();
+    val points = arrayListOf<Point_and_time>();
+
+    val pointsData = arrayListOf<Point>();
+    var index: Int = 0;
+
     val convert_to_F = (temperature_unit == "wmoUnit:degC");
     var temperature_min: BigDecimal? = null;
     var temperature_max: BigDecimal? = null;
@@ -119,6 +125,10 @@ fun Daily_forecast(modifier: Modifier,
             points.add(Point_and_time(converted,
                                       date_time));
 
+            pointsData.add(Point(index.toFloat(),
+                    converted.toFloat()));
+            index++;
+
             if((temperature_min == null) || (converted < temperature_min)) temperature_min = converted;
             if((temperature_max == null) || (converted > temperature_max)) temperature_max = converted;
             if((date_time_min == null) || (date_time < date_time_min)) date_time_min = date_time;
@@ -137,14 +147,14 @@ fun Daily_forecast(modifier: Modifier,
                                                    date_time_max,
                                                    temperature_min,
                                                    temperature_max);
-        Line_time_graph(modifier = modifier,
+        Line_time_graph(modifier = modifier
+            .fillMaxWidth()
+            .height(300.dp),
+                        pointsData,
                         line_graph_data = line_graph_data,
                         x_axis_resolution = x_axis_resolution,
-                        y_axis_resolution = y_axis_resolution,
-                        y_axis_number_increments_minimum = 5,
-                        x_axis_increment_size = 30.dp,
-                        y_axis_padding = 10.dp,
-                        y_height = 150.dp)
+                        y_axis_resolution = y_axis_resolution)
+
     }
 }
 
