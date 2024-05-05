@@ -391,7 +391,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
             }
 
             load_forecast_location_setting(application_context) { forecast_location_setting ->
-                viewModelScope.launch() {
+                viewModelScope.launch()
+                {
                     val value: Array<String> = try
                     {
                         val location = process_location_for_get_points(forecast_location_setting);
@@ -650,7 +651,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
 
     fun load_night_mode_selection(context: Context)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             update_night_mode(context,
                               User_settings.get_night_mode_selection(context).first())
         }
@@ -659,7 +661,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun load_night_mode_selection(context: Context,
                                   function: (Int) -> Unit)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             function(User_settings.get_night_mode_selection(context).first());
         }
     }
@@ -667,7 +670,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun store_night_mode_selection(context: Context,
                                    selection: Int)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             User_settings.store_night_mode_selection(context,
                                                      selection);
             update_night_mode(context,
@@ -678,7 +682,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun load_forecast_location_setting(context: Context,
                                        function: (String) -> Unit)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             function(User_settings.get_forecast_location_setting(context).first());
         }
     }
@@ -686,7 +691,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun store_forecast_location_setting(context: Context,
                                         location: String)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             User_settings.store_forecast_location_setting(context,
                                                           location);
         }
@@ -695,7 +701,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun load_download_over_wifi_only(context: Context,
                                      function: (Boolean) -> Unit)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             function(User_settings.load_download_over_wifi_only(context).first());
         }
     }
@@ -703,7 +710,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun store_download_over_wifi_only(context: Context,
                                       value: Boolean)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             User_settings.store_download_over_wifi_only(context,
                                                         value);
         }
@@ -712,7 +720,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun load_auto_hide_toolbars(context: Context,
                                 function: (Boolean) -> Unit)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             function(User_settings.load_auto_hide_toolbars(context).first());
         }
     }
@@ -720,7 +729,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun store_auto_hide_toolbars(context: Context,
                                  value: Boolean)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             User_settings.store_auto_hide_toolbars(context,
                                                    value);
         }
@@ -729,7 +739,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun load_last_weather_data_fetched(context: Context,
                                        function: (Data_storage) -> Unit)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             function(User_settings.load_last_weather_data_fetched(context).first());
         }
     }
@@ -737,7 +748,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun store_last_weather_data_fetched(context: Context,
                                         data_storage: Data_storage)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             User_settings.store_last_weather_data_fetched(context,
                                                           data_storage);
         }
@@ -769,7 +781,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
     fun is_ok_to_fetch_data(context: Context,
                             function: (Boolean) -> Unit)
     {
-        viewModelScope.launch() {
+        viewModelScope.launch()
+        {
             function(User_settings.is_ok_to_fetch_data(context).first());
         }
     }
@@ -876,7 +889,8 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
         suspend fun store_forecast_location_setting(context: Context,
                                                     location: String)
         {
-            context.user_preferences_data_store.edit() { preferences ->
+            context.user_preferences_data_store.edit()
+            { preferences ->
                 preferences[FORECAST_LOCATION_SETTING_KEY] = location;
             }
         }

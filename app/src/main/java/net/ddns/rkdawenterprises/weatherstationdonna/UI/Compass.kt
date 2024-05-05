@@ -54,7 +54,6 @@ import kotlin.math.sin
 @Suppress("unused")
 private const val LOG_TAG = "Compass_composable";
 
-@OptIn(ExperimentalTextApi::class)
 @Composable
 fun Compass(modifier: Modifier,
             angle: Int,

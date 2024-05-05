@@ -31,7 +31,11 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.*
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.WindowInsets
+import android.view.WindowManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -48,7 +52,6 @@ import net.ddns.rkdawenterprises.weatherstationdonna.UI.Main
 import net.ddns.rkdawenterprises.weatherstationdonna.UI.Main_view_model
 import net.ddns.rkdawenterprises.weatherstationdonna.databinding.ActivityMainBinding
 import net.ddns.rkdawenterprises.weatherstationdonna.databinding.ForecastLocationBinding
-import java.util.*
 
 /**
  * Some older devices needs a small delay between UI widget updates and a change of the status and navigation bar.
@@ -452,7 +455,7 @@ class Main_activity: AppCompatActivity()
         }
         else
         {
-            Log.d(LOG_TAG, "$short_message")
+            Log.d(LOG_TAG, short_message)
         }
 
         Snackbar.make(m_main_binding.root,
@@ -473,7 +476,7 @@ class Main_activity: AppCompatActivity()
                     && (data_storage.m_page_davis != null)
                     && (data_storage.m_data_weather_gov != null))
                 {
-                    //TODO: m_main_view_model.store_last_weather_data_fetched(this, data_storage);
+                    m_main_view_model.store_last_weather_data_fetched(this, data_storage);
                 }
             }
         }

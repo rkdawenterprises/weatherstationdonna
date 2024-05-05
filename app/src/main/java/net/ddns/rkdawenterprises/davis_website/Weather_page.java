@@ -46,7 +46,7 @@ public class Weather_page {
         if( string.length() < 2 ) return "";
 
         int start = 0;
-        if( start_delimiter.length() > 0 )
+        if(!start_delimiter.isEmpty())
         {
             start = string.indexOf( start_delimiter );
             if( start == -1 ) return "";
@@ -55,7 +55,7 @@ public class Weather_page {
 
         int end = string.length() - 1;
         int length = ( end - start ) + 1;
-        if( end_delimiter.length() > 0 )
+        if(!end_delimiter.isEmpty())
         {
             end = string.indexOf( end_delimiter, start );
             if( end == -1 ) return "";

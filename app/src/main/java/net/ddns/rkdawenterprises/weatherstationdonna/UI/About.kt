@@ -25,9 +25,7 @@
 
 package net.ddns.rkdawenterprises.weatherstationdonna.UI
 
-import android.os.Build
 import android.text.Html
-import android.text.SpannableString
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import androidx.annotation.StringRes
@@ -84,7 +82,8 @@ fun Text_view_from_HTML(@StringRes string_ID: Int)
 
     AndroidView(factory =
                 { context ->
-                    val view = android.widget.TextView(context).apply() {
+                    val view = android.widget.TextView(context).apply()
+                    {
                         text = text_spanned;
                     }
                     view.movementMethod = LinkMovementMethod.getInstance();

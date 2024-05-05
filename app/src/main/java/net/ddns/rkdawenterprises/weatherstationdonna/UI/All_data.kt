@@ -26,7 +26,6 @@
 package net.ddns.rkdawenterprises.weatherstationdonna.UI
 
 import android.text.Html
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
