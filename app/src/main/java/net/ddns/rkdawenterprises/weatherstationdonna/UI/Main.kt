@@ -128,10 +128,10 @@ fun Main(main_view_model: Main_view_model = viewModel())
                                            weather_data_davis);
                             }
 
-                            item()
-                            {
-                                Forecast(weather_forecast);
-                            }
+//                            item()
+//                            {
+//                                Forecast(weather_forecast);
+//                            }
 
                             item()
                             {
