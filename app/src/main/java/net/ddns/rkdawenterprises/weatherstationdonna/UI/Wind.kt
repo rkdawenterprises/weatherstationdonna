@@ -29,6 +29,7 @@ import android.text.Html
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,136 +37,108 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.ddns.rkdawenterprises.rkdawe_api_common.Utilities.convert_time_UTC_to_local
-import net.ddns.rkdawenterprises.rkdawe_api_common.Utilities.convert_timestamp_to_local
 import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
 import net.ddns.rkdawenterprises.weatherstationdonna.R
-import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_typography
-import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.material_colors_extended
-import java.time.format.DateTimeFormatter
+import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Typography
 
 @Suppress("unused")
 private const val LOG_TAG = "Wind_composable";
 
+
 @Composable
-fun Wind(weather_data_RKDAWE: Weather_data?,
-         weather_data_davis: net.ddns.rkdawenterprises.davis_website.Weather_data?,
-         spaced_by: Dp,
-         column_weights: FloatArray,
-         icon_size: Array<Dp>)
+fun Wind(weather_data: Weather_data,
+         is_larger_window: Boolean,
+         divider_thickness: Dp,
+         icon_height: Dp,
+         icon_width: Dp,
+         horizontal_padding: Dp,
+         vertical_padding: Dp)
 {
-    Row(modifier = Modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.spacedBy(space = spaced_by,
-                                                     alignment = Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically)
+    val current_wind_text: String = "${weather_data.wind_speed} ${weather_data.wind_speed_units}"
+
+    val local_time_of_hi_speed = try
     {
-        Image(painterResource(R.drawable.air_48),
-              contentDescription = stringResource(id = R.string.wind_icon),
-              modifier = Modifier
-                  .width(icon_size[0])
-                  .height(icon_size[1]));
-
-        Text(stringResource(R.string.wind_colon),
-             modifier = Modifier
-                 .weight(column_weights[0],
-                         fill = true)
-                 .padding(start = 5.dp),
-             style = Main_typography.h6);
-
-        val current_wind_text: String? =
-            if(weather_data_RKDAWE != null)
-            {
-                "${weather_data_RKDAWE.wind_speed} ${weather_data_RKDAWE.wind_speed_units}"
-            }
-            else if(weather_data_davis != null)
-            {
-                "${weather_data_davis.wind} ${weather_data_davis.windUnits}"
-            }
-            else null;
-
-        if(current_wind_text != null)
-        {
-            Text(current_wind_text,
-                 modifier = Modifier.weight(column_weights[1],
-                                            fill = true),
-                 style = Main_typography.h6)
-        };
-
-        val day_high_text: String? =
-            if(weather_data_RKDAWE != null)
-            {
-                "${stringResource(id = R.string.peak)} ${weather_data_RKDAWE.daily_hi_wind_speed} ${
-                    weather_data_RKDAWE.wind_speed_units} ${stringResource(id = R.string.at)} ${
-                    convert_time_UTC_to_local(weather_data_RKDAWE.time_of_hi_speed,
-                                              "h:mm a")}"
-            }
-            else if(weather_data_davis != null)
-            {
-                "${stringResource(id = R.string.peak)} ${weather_data_davis.gust} ${
-                    weather_data_davis.windUnits} ${stringResource(id = R.string.at)} ${
-                    DateTimeFormatter.ofPattern("h:mm a")
-                        .format(convert_timestamp_to_local(weather_data_davis.gustAt,
-                                                           weather_data_davis.timeZoneId))}"
-            }
-            else null;
-
-        if(day_high_text != null)
-        {
-            Text(day_high_text,
-                 modifier = Modifier.weight(column_weights[2],
-                                            fill = true),
-                 style = Main_typography.subtitle1)
-        };
+        convert_time_UTC_to_local(weather_data.time_of_hi_speed,
+                                  "h:mm a")
+    }
+    catch(exception: java.time.format.DateTimeParseException)
+    {
+        stringResource(id = R.string.NA)
     }
 
-    Row(modifier = Modifier.padding(top = 10.dp).fillMaxWidth().fillMaxSize(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+    val column_weights = floatArrayOf(0.4f,
+                                      0.6f);
+    var column_index = 0
+
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .padding(top = vertical_padding),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically)
     {
-        val wind_direction: Int = weather_data_RKDAWE?.wind_direction
-            ?: (weather_data_davis?.windDirection
-                ?: 0);
-
-        Compass(modifier = Modifier.size(70.dp),
-                angle = wind_direction,
-                marker_degrees_step = 30,
-                outline_color = MaterialTheme.material_colors_extended.icon_tint);
-
-        if(weather_data_RKDAWE != null)
+        Column(modifier = Modifier
+            .weight(column_weights[column_index++],
+                    fill = true)
+            .padding(start = horizontal_padding,
+                     end = horizontal_padding,
+                     bottom = vertical_padding),
+               verticalArrangement = Arrangement.spacedBy(vertical_padding),
+               horizontalAlignment = Alignment.CenterHorizontally)
         {
-            Column(modifier = Modifier,
-                   verticalArrangement = Arrangement.spacedBy(5.dp))
+            Row(Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(space = horizontal_padding,
+                                                             alignment = Alignment.Start),
+                verticalAlignment = Alignment.CenterVertically)
             {
+                Image(modifier = Modifier.height(icon_height).width(icon_width).padding(start = horizontal_padding),
+                      painter = painterResource(R.drawable.outline_air_32),
+                      contentDescription = stringResource(id = R.string.wind_icon))
 
-                Text("${stringResource(id = R.string.two_minute_average)} ${
-                    weather_data_RKDAWE.two_min_avg_wind_speed
-                } ${weather_data_RKDAWE.wind_speed_units}",
-                     style = Main_typography.subtitle1);
-
-                Text("${stringResource(id = R.string.ten_minute_average)} ${
-                    weather_data_RKDAWE.ten_min_avg_wind_speed
-                } ${weather_data_RKDAWE.wind_speed_units}",
-                     style = Main_typography.subtitle1);
-
-                Text(Html.fromHtml("${stringResource(id = R.string.ten_minute_gust)} ${
-                    weather_data_RKDAWE.ten_min_wind_gust
-                } ${weather_data_RKDAWE.wind_speed_units} ${
-                    stringResource(id = R.string.at)
-                } ${weather_data_RKDAWE.wind_direction_of_ten_min_wind_gust} ${
-                    weather_data_RKDAWE.wind_direction_units
-                }",
-                                   Html.FROM_HTML_MODE_COMPACT).toString(),
-                     style = Main_typography.subtitle1);
+                Text(modifier = Modifier.padding(start = horizontal_padding),
+                     text = current_wind_text,
+                     style = Typography.headlineSmall,
+                     textAlign = TextAlign.Center)
             }
+
+            Compass(modifier = Modifier.size(icon_height),
+                    angle = weather_data.wind_direction,
+                    marker_degrees_step = 30,
+                    outline_color = MaterialTheme.colorScheme.inverseSurface);
+        }
+
+        Column(modifier = Modifier
+            .weight(column_weights[column_index++],
+                    fill = true)
+            .padding(start = horizontal_padding),
+               verticalArrangement = Arrangement.spacedBy(vertical_padding)) {
+            Text(text = "${stringResource(id = R.string.peak)} ${weather_data.daily_hi_wind_speed} ${weather_data.wind_speed_units} ${stringResource(id = R.string.at)} $local_time_of_hi_speed",
+                 style = Typography.titleMedium,
+                 textAlign = TextAlign.Left)
+
+            Text(text = "${stringResource(id = R.string.two_minute_average)}: ${weather_data.two_min_avg_wind_speed} ${weather_data.wind_speed_units}",
+                 style = Typography.titleMedium,
+                 textAlign = TextAlign.Left)
+
+            Text(text = "${stringResource(id = R.string.ten_minute_average)}: ${weather_data.ten_min_avg_wind_speed} ${weather_data.wind_speed_units}",
+                 style = Typography.titleMedium,
+                 textAlign = TextAlign.Left)
+
+            Text(text = Html.fromHtml("${stringResource(id = R.string.ten_minute_gust)} ${weather_data.ten_min_wind_gust} ${weather_data.wind_speed_units} ${stringResource(id = R.string.at)} ${weather_data.wind_direction_of_ten_min_wind_gust} ${weather_data.wind_direction_units}",
+                                      Html.FROM_HTML_MODE_COMPACT).toString(),
+                 style = Typography.titleMedium,
+                 textAlign = TextAlign.Left)
         }
     }
 }

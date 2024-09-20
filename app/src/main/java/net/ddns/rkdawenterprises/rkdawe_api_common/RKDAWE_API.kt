@@ -23,21 +23,38 @@
 
 package net.ddns.rkdawenterprises.rkdawe_api_common
 
+//import okhttp3.OkHttpClient
+//import okhttp3.logging.HttpLoggingInterceptor
+
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.http.Query
 
 private const val s_base_URI = "https://rkdawenterprises.ddns.net"
 
+//private val client: OkHttpClient = OkHttpClient.Builder()
+//    .addNetworkInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+//    .build();
+
 private val s_retrofit = Retrofit.Builder()
-        .addConverterFactory(ScalarsConverterFactory.create())
         .baseUrl(s_base_URI)
+//        .client(client)
+        .addConverterFactory(ScalarsConverterFactory.create())
         .build()
 
 interface RKDAWE_API_service
 {
-    @GET("rkdaweapi/weather_station_data")
-    suspend fun get_weather_station_data(): String
+    @GET("rkdaweapi/v1")
+    suspend fun update_paths(): String
+
+    @GET("rkdaweapi/{path}")
+    suspend fun get_weather_station_data(@Path(value = "path", encoded = true) path: String,
+                                         @Query("forecast_location") forecast_location: String): String
+
+    @GET("rkdaweapi/{path}")
+    suspend fun get_weather_station_data(@Path(value = "path", encoded = true) path: String): String
 }
 
 object RKDAWE_API

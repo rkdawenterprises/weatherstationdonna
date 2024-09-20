@@ -31,116 +31,96 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
 import net.ddns.rkdawenterprises.weatherstationdonna.R
-import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_typography
+import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Typography
+import java.util.Locale
 
 @Suppress("unused")
 private const val LOG_TAG = "Humidity_composable";
 
 @Composable
-fun Humidity(weather_data_RKDAWE: Weather_data?,
-             weather_data_davis: net.ddns.rkdawenterprises.davis_website.Weather_data?,
-             spaced_by: Dp,
-             column_weights: FloatArray,
-             icon_size: Array<Dp>)
+fun Humidity(weather_data: Weather_data,
+             is_larger_window: Boolean,
+             divider_thickness: Dp,
+             icon_height: Dp,
+             icon_width: Dp,
+             horizontal_padding: Dp,
+             vertical_padding: Dp)
 {
-    Row(modifier = Modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.spacedBy(space = spaced_by,
-                                                     alignment = Alignment.CenterHorizontally),
+    val current_humidity_text: String = Html.fromHtml("${weather_data.outside_humidity} ${weather_data.humidity_units}",
+                                                      Html.FROM_HTML_MODE_COMPACT).toString()
+
+    val feels_like_temperature_text: String =
+            Html.fromHtml("${stringResource(id = R.string.feels_like)} ${
+                String.format("%.1f ", weather_data.heat_index_derived)} ${
+                weather_data.temperature_units}",
+                          Html.FROM_HTML_MODE_COMPACT).toString()
+
+    val wind_chill_temperature_text: String =
+            Html.fromHtml("${stringResource(id = R.string.wind_chill)} ${
+                String.format("%.1f ", weather_data.wind_chill_derived)} ${
+                weather_data.temperature_units}",
+                          Html.FROM_HTML_MODE_COMPACT).toString()
+
+    val column_weights = floatArrayOf(0.3f,
+                                      0.7f);
+    var column_index = 0
+
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .padding(top = vertical_padding),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically)
     {
-        Image(painterResource(R.drawable.humidity_percentage_48),
-              contentDescription = stringResource(id = R.string.humidity_icon),
-              modifier = Modifier
-                  .width(icon_size[0])
-                  .height(icon_size[1]));
+        Image(modifier = Modifier
+            .height(icon_height)
+            .width(icon_width)
+            .padding(start = horizontal_padding),
+              painter = painterResource(R.drawable.outline_humidity_percentage_32),
+              contentDescription = stringResource(id = R.string.humidity_icon))
 
-        Text(stringResource(R.string.humidity_colon),
+        Text(text = current_humidity_text,
              modifier = Modifier
-                 .weight(column_weights[0],
-                         fill = true),
-             style = Main_typography.h6);
+                 .weight(column_weights[column_index++],
+                         fill = true)
+                 .padding(start = horizontal_padding,
+                          end = horizontal_padding),
+             style = Typography.headlineSmall,
+             textAlign = TextAlign.Center)
 
-        val current_humidity_text: String? =
-            if(weather_data_RKDAWE != null)
-            {
-                Html.fromHtml("${weather_data_RKDAWE.outside_humidity} ${
-                    weather_data_RKDAWE.humidity_units}", Html.FROM_HTML_MODE_COMPACT).toString();
-            }
-            else if(weather_data_davis != null)
-            {
-                "${weather_data_davis.humidity} %"
-            }
-            else null;
-
-        if(current_humidity_text != null)
-        {
-            Text(current_humidity_text,
-                 modifier = Modifier.weight(column_weights[1],
-                                            fill = true),
-                 style = Main_typography.h6)
-        };
+//        VerticalDivider(modifier = Modifier
+//            .height(icon_height)
+//            .width(divider_thickness))
 
         Column(modifier = Modifier
-            .weight(column_weights[2],
-                    fill = true),
-               verticalArrangement = Arrangement.spacedBy(5.dp))
+            .weight(column_weights[column_index++],
+                    fill = true)
+            .height(icon_height)
+            .padding(start = horizontal_padding),
+               verticalArrangement = Arrangement.SpaceAround)
         {
-            val feels_like_temperature_text: String? =
-                if(weather_data_RKDAWE != null)
-                {
-                    Html.fromHtml("${stringResource(id = R.string.feels_like)} ${
-                        String.format("%.1f ", weather_data_RKDAWE.heat_index_derived)} ${
-                        weather_data_RKDAWE.temperature_units}",
-                                  Html.FROM_HTML_MODE_COMPACT).toString();
-                }
-                else if(weather_data_davis != null)
-                {
-                    Html.fromHtml("${stringResource(id = R.string.feels_like)} ${
-                        weather_data_davis.temperatureFeelLike} ${weather_data_davis.tempUnits}",
-                                  Html.FROM_HTML_MODE_COMPACT).toString();
-                }
-                else null;
+            Text(text = feels_like_temperature_text,
+                 style = Typography.titleMedium,
+                 textAlign = TextAlign.Left)
 
-            if(feels_like_temperature_text != null)
-            {
-                Text(feels_like_temperature_text,
-                     style = Main_typography.subtitle1)
-            };
-
-            val wind_chill_temperature_text: String? =
-                if(weather_data_RKDAWE != null)
-                {
-                    Html.fromHtml("${stringResource(id = R.string.wind_chill)} ${
-                        String.format("%.1f ", weather_data_RKDAWE.wind_chill_derived)} ${
-                        weather_data_RKDAWE.temperature_units}",
-                                  Html.FROM_HTML_MODE_COMPACT).toString();
-                }
-                else if(weather_data_davis != null)
-                {
-                    Html.fromHtml("${stringResource(id = R.string.wind_chill)} ${
-                        String.format("%.1f ", Weather_data.calculate_wind_chill(weather_data_davis.temperature.toDouble(),
-                                                                                 weather_data_davis.wind.toDouble()))} ${weather_data_davis.tempUnits}",
-                                  Html.FROM_HTML_MODE_COMPACT).toString();
-                }
-                else null;
-
-            if(wind_chill_temperature_text != null)
-            {
-                Text(wind_chill_temperature_text,
-                     style = Main_typography.subtitle1)
-            };
+            Text(text = wind_chill_temperature_text,
+                 style = Typography.titleMedium,
+                 textAlign = TextAlign.Left)
         }
     }
 }

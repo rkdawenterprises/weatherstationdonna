@@ -32,11 +32,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.Divider
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,34 +49,34 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
 import net.ddns.rkdawenterprises.weatherstationdonna.R
-import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_typography
-import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.material_colors_extended
+import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Typography
 
 @Suppress("unused")
 private const val LOG_TAG = "All_data_composable";
 
 @Composable
-fun All_data(weather_data_RKDAWE: Weather_data?)
+fun All_data(weather_data: Weather_data?)
 {
     Column(modifier = Modifier,
            verticalArrangement = Arrangement.spacedBy(10.dp))
     {
         BasicTextField(modifier = Modifier
-            .background(MaterialTheme.material_colors_extended.view_divider,
-                        RectangleShape).fillMaxWidth(),
+            .background(MaterialTheme.colorScheme.tertiary,
+                        RectangleShape)
+            .fillMaxWidth()
+            .padding(top = 5.dp, bottom = 5.dp),
                        value = stringResource(id = R.string.all_data),
                        onValueChange = {},
                        singleLine = true,
                        enabled = false,
                        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center,
-                                                               fontFamily = Main_typography.h6.fontFamily,
-                                                               fontWeight = Main_typography.h6.fontWeight,
-                                                               fontSize = Main_typography.h6.fontSize,
-                                                               color = MaterialTheme.material_colors_extended.text_default));
+                                                               fontFamily = Typography.headlineMedium.fontFamily,
+                                                               fontWeight = Typography.headlineMedium.fontWeight,
+                                                               fontSize = Typography.headlineMedium.fontSize));
 
-        if(weather_data_RKDAWE != null)
+        if(weather_data != null)
         {
-            val array_of_strings = weather_data_RKDAWE.to_display_TSV_string()
+            val array_of_strings = weather_data.to_display_TSV_string()
                 .split("\n").filter { it.isNotBlank() }
 
             val all_data = array_of_strings.map()
@@ -86,7 +87,7 @@ fun All_data(weather_data_RKDAWE: Weather_data?)
             Simple_table(columns = listOf(Data_column(weight = 0.55f),
                                           Data_column(weight = 0.45f)),
                          modifier = Modifier.fillMaxSize(),
-                         separator = { Divider() },
+                         separator = { HorizontalDivider() },
                          space_between = 5.dp,
                          rows = all_data)
         }
@@ -122,7 +123,7 @@ fun Simple_table(columns: List<Data_column>,
                 {
                     Text(cells[0],
                          modifier,
-                         style = Main_typography.h6,
+                         style = Typography.headlineSmall,
                          textAlign = TextAlign.Center);
                 }
             }
@@ -155,4 +156,4 @@ fun Table_row(columns: List<Data_column>,
 
 data class Data_column(val alignment: TextAlign = TextAlign.Start,
                        val weight: Float = 1f,
-                       val style: TextStyle = Main_typography.subtitle1)
+                       val style: TextStyle = Typography.titleSmall)

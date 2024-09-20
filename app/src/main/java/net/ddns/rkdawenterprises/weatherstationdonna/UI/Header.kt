@@ -30,20 +30,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.MaterialTheme
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import net.ddns.rkdawenterprises.davis_website.Weather_page
 import net.ddns.rkdawenterprises.rkdawe_api_common.Utilities
 import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
 import net.ddns.rkdawenterprises.weatherstationdonna.R
-import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Main_typography
-import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.material_colors_extended
+import net.ddns.rkdawenterprises.weatherstationdonna.UI.theme.Typography
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -51,70 +51,110 @@ import java.time.ZoneId
 private const val LOG_TAG = "Header_composable";
 
 @Composable
-fun Header(weather_data_RKDAWE: Weather_data?,
-           weather_data_davis: net.ddns.rkdawenterprises.davis_website.Weather_data?,
-           weather_page: Weather_page?,
-           modifier: Modifier = Modifier)
+fun Header(modifier: Modifier = Modifier,
+           weather_data: Weather_data?,
+           is_larger_window: Boolean)
 {
-    val system_name = if(weather_data_RKDAWE != null)
+    val system_name = if(weather_data != null)
     {
-        weather_data_RKDAWE.system_name;
-    }
-    else if(weather_page != null)
-    {
-        weather_page.systemName;
+        weather_data.system_name;
     }
     else
     {
         stringResource(id = R.string.system_name_default);
     }
 
-    val as_of = if(weather_data_RKDAWE != null)
+    val as_of = if(weather_data != null)
     {
         "${stringResource(id = R.string.conditions_as_of_colon)} ${
-            Utilities.convert_time_UTC_to_local(weather_data_RKDAWE.time,
-                                                "h:mm a EEEE, MMM d, yyyy")
-        }"
-    }
-    else if(weather_data_davis != null)
-    {
-        "${stringResource(id = R.string.conditions_as_of_colon)} ${
-            Utilities.convert_timestamp_to_local(weather_data_davis.lastReceived,
-                                                 weather_data_davis.timeZoneId,
-                                                 "h:mm a EEEE, MMM d, yyyy")
+            try
+            {
+                Utilities.convert_time_UTC_to_local(weather_data.time,
+                                                    "h:mm a EEEE, MMM d, yyyy")
+            }
+            catch(exception: java.time.format.DateTimeParseException)
+            {
+                stringResource(id = R.string.NA)
+            }
         }"
     }
     else
     {
         "${stringResource(id = R.string.conditions_as_of_colon)} ${
-            Utilities.convert_time_UTC_to_local(LocalDateTime.now().atZone(ZoneId.of("UTC")).toString(),
+            Utilities.convert_time_UTC_to_local(LocalDateTime.now()
+                                                        .atZone(ZoneId.of("UTC"))
+                                                        .toString(),
                                                 "h:mm a EEEE, MMM d, yyyy")
         }"
     }
 
+    val text_field_state = rememberTextFieldState(system_name)
+
     Column(modifier = modifier) {
-        BasicTextField(modifier = modifier.background(MaterialTheme.material_colors_extended.primaryVariant,
-                                                      RectangleShape).fillMaxWidth().padding(top = 16.dp),
+        BasicTextField(modifier = modifier
+                .background(MaterialTheme.colorScheme.secondary,
+                            RectangleShape)
+                .fillMaxWidth()
+                .padding(top = 16.dp),
                        value = system_name,
                        onValueChange = {},
-                       singleLine = true,
                        enabled = false,
-                       textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center,
-                                                               fontFamily = Main_typography.h6.fontFamily,
-                                                               fontWeight = Main_typography.h6.fontWeight,
-                                                               fontSize = Main_typography.h6.fontSize,
-                                                               color = MaterialTheme.material_colors_extended.onPrimary));
+                       textStyle =
+                            if(!is_larger_window)
+                            {
+                                LocalTextStyle.current.copy(textAlign = TextAlign.Center,
+                                                            fontFamily = Typography.titleMedium.fontFamily,
+                                                            fontWeight = Typography.titleMedium.fontWeight,
+                                                            fontSize = Typography.titleMedium.fontSize,
+                                                            color = MaterialTheme.colorScheme.onPrimary)
+                            }
+                            else
+                            {
+                                LocalTextStyle.current.copy(textAlign = TextAlign.Center,
+                                                            fontFamily = Typography.titleLarge.fontFamily,
+                                                            fontWeight = Typography.titleLarge.fontWeight,
+                                                            fontSize = Typography.titleLarge.fontSize,
+                                                            color = MaterialTheme.colorScheme.onPrimary)
+                            },
+                       onTextLayout = { result: TextLayoutResult ->
+                           // If the text is wrapping, then wrap it at the '@' character.
+                           if((result.lineCount > 1) && text_field_state.text.contains('@') && !text_field_state.text.contains('\n'))
+                           {
+                               val start = text_field_state.text.indexOf('@')
+                               text_field_state.edit {
+                                   replace(start,
+                                           start + 1,
+                                           "\n@")
+                               }
+                           }
+                       })
 
-        BasicTextField(modifier = modifier.background(MaterialTheme.material_colors_extended.primaryVariant,
-                                                      RectangleShape).fillMaxWidth().padding(bottom = 16.dp),
+        BasicTextField(modifier = modifier
+                .background(MaterialTheme.colorScheme.secondary,
+                            RectangleShape)
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
                        value = as_of,
                        onValueChange = {},
                        singleLine = true,
                        enabled = false,
-                       textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center,
-                                                               fontFamily = Main_typography.subtitle1.fontFamily,
-                                                               fontWeight = Main_typography.subtitle1.fontWeight,
-                                                               fontSize = Main_typography.subtitle1.fontSize,
-                                                               color = MaterialTheme.material_colors_extended.onPrimary));
+                       textStyle =
+                           if(!is_larger_window)
+                           {
+                               LocalTextStyle.current.copy(textAlign = TextAlign.Center,
+                                                           fontFamily = Typography.titleSmall.fontFamily,
+                                                           fontWeight = Typography.titleSmall.fontWeight,
+                                                           fontSize = Typography.titleSmall.fontSize,
+                                                           color = MaterialTheme.colorScheme.onPrimary)
+                           }
+                           else
+                           {
+                               LocalTextStyle.current.copy(textAlign = TextAlign.Center,
+                                                           fontFamily = Typography.titleMedium.fontFamily,
+                                                           fontWeight = Typography.titleMedium.fontWeight,
+                                                           fontSize = Typography.titleMedium.fontSize,
+                                                           color = MaterialTheme.colorScheme.onPrimary)
+                           }
+                      );
     }
 }

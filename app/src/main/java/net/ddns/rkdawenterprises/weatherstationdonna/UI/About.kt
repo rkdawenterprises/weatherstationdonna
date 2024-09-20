@@ -32,9 +32,9 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -57,7 +57,7 @@ fun About_dialog(on_ok: () -> Unit,
                 confirmButton =
                 {
                     TextButton(onClick = on_ok)
-                    { Text(text =  stringResource(id = R.string.ok)) }
+                    { Text(text =  stringResource(id = R.string.OK)) }
                 },
                 title = { Text(text = "${stringResource(id = R.string.app_name)} v$version_name") },
                 text =

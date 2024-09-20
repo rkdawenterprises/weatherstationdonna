@@ -1,34 +1,22 @@
-<!--
-  ~ Copyright (c) 2019-2023 RKDAW Enterprises and Ralph Williamson.
-  ~       email: rkdawenterprises@gmail.com
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~       http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
-
 <resources>
     <string name="app_name">Weather Station Donna</string>
 
+    <string name="action_dropdown_menu">Dropdown Menu with More Actions</string>
+    <string name="action_dropdown_menu_condensed">More Actions</string>
     <string name="action_download_over_wifi_only">Download Data Over WiFi Only</string>
-    <string name="action_download_over_wifi_only_condensed">Download WiFi Only</string>
-    <string name="action_set_night_mode_theme">Set Dark Mode Theme</string>
-    <string name="action_set_night_mode_theme_condensed">Dark Mode</string>
+    <string name="action_download_over_wifi_only_condensed">WiFi Only</string>
+    <string name="action_set_dart_mode_theme">Set Dark Mode Theme</string>
+    <string name="action_set_dart_mode_theme_condensed">Dark Mode</string>
     <string name="action_set_forcast_location">Set Forcast Location</string>
     <string name="action_set_forcast_location_condensed">Location</string>
     <string name="action_refresh_weather_data">Refresh Weather Data</string>
     <string name="action_refresh_weather_data_condensed">Refresh</string>
     <string name="action_auto_hide_toolbars">Auto Hide Toolbars</string>
     <string name="action_auto_hide_toolbars_condensed">Auto Hide</string>
-    <string name="action_exit">Exit</string>
-    <string name="action_about">About</string>
+    <string name="action_about">About the Weather Station Donna App</string>
+    <string name="action_about_condensed">About</string>
+    <string name="action_exit">Exit Weather Station Donna App</string>
+    <string name="action_exit_condensed">Exit</string>
 
     <!-- If the weather data should only be downloaded over WiFi. -->
     <bool name="download_over_wifi_only_default">false</bool>
@@ -37,14 +25,14 @@
     <bool name="auto_hide_toolbars_default">true</bool>
 
     <!-- Dark mode selection enumeration. -->
-    <string-array name="night_mode_options">
+    <string-array name="dark_mode_options">
         <item>System</item>
         <item>Light</item>
         <item>Dark</item>
     </string-array>
 
     <!-- Default dark mode setting. -->
-    <integer name="night_mode_selection_default">0</integer>
+    <integer name="dark_mode_selection_default">0</integer>
 
     <!--    Default forecast location-->
     <string name="forecast_location_setting_default">34.571712, -92.999596</string>
@@ -52,26 +40,45 @@
     <string name="system_name_default">Weather Station Donna @ Hot Springs, AR</string>
     <string name="conditions_as_of_colon">Conditions as of: </string>
     <string name="exiting">Exiting</string>
-    <string name="ok">OK</string>
+    <string name="OK">OK</string>
     <string name="cancel">Cancel</string>
-    <string name="latest_weather_data">Latest Weather Data</string>
+    <string name="NA">N/A</string>
+
     <string name="unable_to_get_weather_data">Unable to get weather data</string>
+    <string name="unable_to_get_davis_weather_data">Unable to get Davis weather data</string>
     <string name="unable_to_get_forcast_data">Unable to get forcast data</string>
-    <string name="select_night_mode">"Select Dark Mode"</string>
+    <string name="please_set_forecast_location">Please set forecast location all features</string>
+
+    <string name="select_dark_mode">"Select Dark Mode"</string>
+
     <string name="set_forecast_location">"Set Forecast Location"</string>
-    <string name="enter_forecast_location">"Enter Forecast Location \&lt;lat,long\&gt;"</string>
+    <string name="enter_forecast_location">"Enter Location \&lt;lat,long\&gt;"</string>
     <string name="use_current">"Use Current"</string>
     <string name="use_default">"Use Default"</string>
+    <string name="getting_location">getting location…</string>
+    <string name="system_did_not_give_a_location">System did not give a location…</string>
+    <string name="location_template">%1$f,%2$f</string>
+    <string name="location_permissions">Location Permissions</string>
+
     <string name="not_allowed_to_get_weather_data_unless_over_wifi">Not allowed to get weather data unless over WIFI, check settings…</string>
+
+    <string name="displays_weather_data_from_donna_s_davis_vantage_vue_station">Weather data from Donna\'s Davis Vantage Vue station.</string>
+    <string name="copyright_2019_2023_rkdaw_enterprises_and_ralph_williamson">Copyright 2019–2024 RKDAW Enterprises and Ralph Williamson.</string>
+    <string name="about_app_information_link"><![CDATA[Visit
+        <a href="https://rkdawenterprises.ddns.net/rkdaweapi/weather_station_donna_app_info">Weather Station Donna App Information at RKDAW Enterprises</a>
+        for More Information, Privacy Policy, and License.]]></string>
+
     <string name="dynamic_forecast_icon">Dynamic Forecast Icon</string>
     <string name="dynamic_forecast_unavailable_icon">Dynamic Forecast Unavailable Icon</string>
     <string name="high_colon">HIGH:</string>
     <string name="low_colon">LOW:</string>
     <string name="at">at</string>
+
     <string name="humidity_icon">Humidity Icon</string>
     <string name="humidity_colon">Humidity:</string>
     <string name="feels_like">Feels like</string>
     <string name="wind_chill">Wind chill</string>
+    
     <string name="wind_icon">Wind Icon</string>
     <string name="wind_colon">Wind:</string>
     <string name="peak">Peak:</string>
@@ -82,26 +89,24 @@
     <string name="s">S</string>
     <string name="e">E</string>
     <string name="w">W</string>
-    <string name="could_not_download_server_data">Could not download server data</string>
+
+    <string name="rain_icon">Rain Icon</string>
     <string name="rain_colon">Rain:</string>
     <string name="rain_rate">Rain rate</string>
+    <string name="day_high_rate">Day high rate</string>
     <string name="seasonal_total">Seasonal total</string>
     <string name="month_total">Month total</string>
     <string name="day_total">Day total</string>
     <string name="last_twenty_four_hour">Last 24 Hr</string>
     <string name="last_fifteen_minute">Last 15 min</string>
     <string name="last_hour">Last hour</string>
+
+    <string name="barometric_pressure_icon">Barometric Pressure Icon</string>
     <string name="barometer_colon">Barometer:</string>
     <string name="barometer_trend">Trend:</string>
+
+    <string name="forecast_for_location_template">Forecast for %1$f,%2$f</string>
+
     <string name="all_data">All Data</string>
-    <string name="displays_weather_data_from_donna_s_davis_vantage_vue_station">Weather data from Donna\'s Davis Vantage Vue station.</string>
-    <string name="copyright_2019_2023_rkdaw_enterprises_and_ralph_williamson">Copyright 2019-2023 RKDAW Enterprises and Ralph Williamson.</string>
-    <string name="about_app_information_link"><![CDATA[Visit
-        <a href="https://rkdawenterprises.ddns.net/rkdaweapi/weather_station_donna_app_info">Weather Station Donna App Information at RKDAW Enterprises</a>
-        for More Information, Privacy Policy, and License.]]></string>
-    <string name="getting_location">getting location...</string>
-    <string name="location_permissions">Location Permissions</string>
-    <string name="for_app_to_use_current_location">In order for this app to use your current location, you must enable location permissions. Cancel if you do not want to enable location permissions, or \'OK\' to open the setting dialog.</string>
-    <string name="system_did_not_give_a_location">System didn\'t give a location...</string>
-    <string name="forecast">Forecast</string>
+
 </resources>
