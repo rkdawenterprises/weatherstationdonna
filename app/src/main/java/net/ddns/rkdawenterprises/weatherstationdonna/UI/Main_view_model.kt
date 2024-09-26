@@ -28,7 +28,6 @@ import android.app.Application
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.State
 import androidx.core.view.WindowInsetsCompat
@@ -249,9 +248,6 @@ class Main_view_model(application: Application) : AndroidViewModel(application)
                             RKDAWE_API.m_RKDAWE_API_service.get_weather_station_data(path = weather_station_data_path,
                                                                                                 forecast_location = forecast_location_setting)
                         }
-
-                        Log.d(LOG_TAG,
-                              "Got weather data...")
 
                         val get_weather_station_data = Get_weather_station_data_GET_response.deserialize_from_JSON(data);
                         if((get_weather_station_data != null) && (get_weather_station_data.success == "true"))

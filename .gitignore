@@ -8,9 +8,7 @@
 .DS_Store
 /build
 /captures
-.externalNativeBuild
 .cxx
-local.properties
 
 # Built application files
 *.apk

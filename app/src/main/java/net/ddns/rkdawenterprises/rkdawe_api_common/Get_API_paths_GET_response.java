@@ -44,7 +44,6 @@ public class Get_API_paths_GET_response
         catch( com.google.gson.JsonSyntaxException exception )
         {
             System.out.println( "Bad data format for Get_weather_station_data_GET_response: " + exception );
-            System.out.println( ">>>" + string_JSON + "<<<" );
         }
 
         return object;

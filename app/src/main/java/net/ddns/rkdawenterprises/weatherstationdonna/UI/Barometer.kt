@@ -29,7 +29,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -42,7 +41,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import net.ddns.rkdawenterprises.rkdawe_api_common.Utilities
 import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
 import net.ddns.rkdawenterprises.weatherstationdonna.R
@@ -52,6 +50,7 @@ import java.util.Locale
 @Suppress("unused")
 private const val LOG_TAG = "Barometer_composable";
 
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun Barometer(weather_data: Weather_data,
               is_larger_window: Boolean,

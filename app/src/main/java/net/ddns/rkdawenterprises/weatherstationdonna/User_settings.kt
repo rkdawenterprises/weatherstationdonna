@@ -27,7 +27,6 @@ package net.ddns.rkdawenterprises.weatherstationdonna
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -41,8 +40,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import net.ddns.rkdawenterprises.rkdawe_api_common.Weather_data
-import net.ddns.rkdawenterprises.weatherstationdonna.UI.is_system_in_dark_mode
-import net.ddns.rkdawenterprises.weatherstationdonna.UI.update_dark_mode
 
 object User_settings
 {
@@ -371,7 +368,6 @@ object User_settings
                                                         value: Weather_data)
     {
         val data_as_string = value.serialize_to_JSON()
-//        Log.d(LOG_TAG, "$data_as_string")
         context.user_preferences_data_store.edit { preferences ->
             if(data_as_string != null)
             {
