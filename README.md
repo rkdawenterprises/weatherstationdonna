@@ -9,7 +9,7 @@ The Weather Station Donna application fetches and displays weather information f
 
 ## Privacy Policy
 * Developer information and a privacy point of contact or a mechanism to submit inquiries:
-    - Developed by RKDAW Enterprises and Ralph Williamson
+    - Developed by RKDAW Enterprises and Ralph Williamson.
     - Contact via email at rkdawenterprises@gmail.com.
 * Disclosing the types of personal and sensitive user data your app accesses, collects, uses, and shares; and any parties with which any personal or sensitive user data is shared:
     - This app does not access, collect, use, or share any personal or sensitive user data.
