@@ -23,7 +23,7 @@
                "PackageName",
                "UnnecessaryVariable")
 
-package net.ddns.rkdawenterprises.weatherstationdonna.UI
+package net.ddns.rkdawenterprises.weatherstationdonna
 
 import android.content.Context
 import android.content.res.Configuration
@@ -41,7 +41,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
-import net.ddns.rkdawenterprises.weatherstationdonna.R
 import org.threeten.extra.PeriodDuration
 import kotlin.time.toKotlinDuration
 import com.fasterxml.jackson.databind.ObjectMapper

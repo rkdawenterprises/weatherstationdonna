@@ -237,7 +237,7 @@ fun on_use_current_location(context: Context,
 
     modal_dialog_host_state.m_is_modal_dialog_visible = false
 
-    if(location_permission_dont_ask_again_state.value)
+    if(!location_permission_dont_ask_again_state.value)
     {
         val message = if(!all_permissions_revoked)
         {
@@ -283,18 +283,12 @@ fun get_location_and_update(context: Context,
                             snackbar_host_state: SnackbarHostState,
                             location_text: MutableState<TextFieldValue>)
 {
-    Log.d(LOG_TAG,
-          ">>> Getting location...")
-
     val access_coarse_location_permission = ActivityCompat.checkSelfPermission(context,
                                                                                android.Manifest.permission.ACCESS_COARSE_LOCATION)
     val is_access_coarse_location_permission = access_coarse_location_permission == PackageManager.PERMISSION_GRANTED
     val access_fine_location_permission = ActivityCompat.checkSelfPermission(context,
                                                                              android.Manifest.permission.ACCESS_FINE_LOCATION)
     val is_access_fine_location_permission = access_fine_location_permission == PackageManager.PERMISSION_GRANTED
-
-    Log.d(LOG_TAG,
-          ">>> course: $is_access_coarse_location_permission, fine: $is_access_fine_location_permission")
 
     if(is_access_coarse_location_permission || is_access_fine_location_permission)
     {
@@ -304,8 +298,6 @@ fun get_location_and_update(context: Context,
                 .getCurrentLocation(PRIORITY_BALANCED_POWER_ACCURACY,
                                     null)
                 .addOnSuccessListener {
-                    Log.d(LOG_TAG,
-                          ">>> Got location result")
                     if(it == null)
                     {
                         modal_dialog_host_state.m_is_modal_dialog_visible = false
@@ -318,8 +310,6 @@ fun get_location_and_update(context: Context,
                     {
                         val latitude = it.latitude;
                         val longitude = it.longitude;
-                        Log.d(LOG_TAG,
-                              "$latitude,$longitude");
                         location_text.value = TextFieldValue(context.resources.getString(R.string.location_template,
                                                                                                     latitude,
                                                                                                     longitude))
@@ -328,8 +318,6 @@ fun get_location_and_update(context: Context,
                                                                       location = location_text.value.text)
                     }
                 }
-        Log.d(LOG_TAG,
-              ">>> Requested location")
     }
     else
     {

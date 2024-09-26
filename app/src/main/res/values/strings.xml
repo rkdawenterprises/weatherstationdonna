@@ -47,7 +47,7 @@
     <string name="unable_to_get_weather_data">Unable to get weather data</string>
     <string name="unable_to_get_davis_weather_data">Unable to get Davis weather data</string>
     <string name="unable_to_get_forcast_data">Unable to get forcast data</string>
-    <string name="please_set_forecast_location">Please set forecast location all features</string>
+    <string name="please_set_forecast_location">Please set forecast location</string>
 
     <string name="select_dark_mode">"Select Dark Mode"</string>
 
