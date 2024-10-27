@@ -2,7 +2,11 @@
 
 # Weather Station Donna for Android
 
-## [1.1.0] - 2024-05-05
+## [2.0.4] - 2024-10-27
+### Changed
+- Added forcast graph.
+
+## [1.1.3] - 2024-05-05
 ### Changed
 - Reworked all UI to compose.
 
